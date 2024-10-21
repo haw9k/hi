@@ -60,10 +60,10 @@ x, y, xmin, xmax = read_input('input.txt')
 # Количество нечетных полиномов для интерполяции
 N = 5  # Количество гармоник для тригонометрической интерполяции
 
-# Выполняем тригонометрическую интерполяцию
+# Выполнение тригонометрической интерполяции
 a0, a, b = trig_interpolation(x, y, N)
 
-# Записываем результаты в файл output.txt
+# Запись результатов в файл output.txt
 write_output('output.txt', xmin, xmax, a0, a, b)
 
 
@@ -74,6 +74,7 @@ write_output('output.txt', xmin, xmax, a0, a, b)
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 # Чтение данных из файла
 def read_input(filename):
@@ -86,9 +87,11 @@ def read_input(filename):
         xmin, xmax = map(float, f.readline().split())
     return x, y, xmin, xmax
 
+
 # Функция для вычисления суммы
 def sum_values(values):
     return sum(values)
+
 
 # Функция для вычисления тригонометрической интерполяции
 def trig_interpolation(x, y, N):
@@ -98,23 +101,24 @@ def trig_interpolation(x, y, N):
 
     a = []
     b = []
-    
-    for n in range(1, N + 1, 2):  # Увеличиваем шаг, чтобы пробегать только нечетные значения n
+
+    for n in range(1, N + 1, 2):  #шаг, чтобы пробегать только нечетные значения n
         an_sum = 0
         bn_sum = 0
         for i in range(M):
             angle = 2 * math.pi * n * x[i] / (x[-1] - x[0])
             an_sum += y[i] * math.cos(angle)
             bn_sum += y[i] * math.sin(angle)
-        
+
         # Коэффициенты an и bn
         an = 2 * an_sum / M
         bn = 2 * bn_sum / M
-        
+
         a.append(an)
         b.append(bn)
-    
+
     return a0, a, b
+
 
 # Функция для записи результатов в файл
 def write_output(filename, xmin, xmax, a0, a, b):
@@ -123,6 +127,7 @@ def write_output(filename, xmin, xmax, a0, a, b):
         f.write(f'a0: {a0}\n')
         f.write(f'a coefficients: {a}\n')
         f.write(f'b coefficients: {b}\n')
+
 
 # Функция для аппроксимации функции
 def approx_function(x, a0, a, b, N, x_range):
@@ -133,38 +138,38 @@ def approx_function(x, a0, a, b, N, x_range):
                   b[idx] * np.sin(2 * np.pi * n * x / (x_range[-1] - x_range[0]))
     return result
 
+
 # Функция для визуализации
 def plot_approximation(x, y, a0, a, b, N, xmin, xmax):
     x_range = np.linspace(xmin, xmax, 500)
     y_approx = approx_function(x_range, a0, a, b, N, x)
 
-    plt.plot(x, y, 'o', label='Original data')
-    plt.plot(x_range, y_approx, label='Approximation')
-    plt.title('Trigonometrical Approximation with Odd Polynomials')
+    plt.plot(x, y, 'o', label='Исходная функция ')
+    plt.plot(x_range, y_approx, label='Аппроксимация ')
+    plt.title('Тригонометрическая аппроксимация методом нечетных полиномов')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.legend()
     plt.grid(True)
     plt.show()
 
-# Основная программа
 
-# Считываем данные из файла input.txt
+# тело проги
+
 x, y, xmin, xmax = read_input('input.txt')
 
-# Количество нечетных полиномов для интерполяции
-N = 5  # Количество гармоник для тригонометрической интерполяции
+N = 5# Количество гармоник для тригонометрической интерполяции
 
-# Выполняем тригонометрическую интерполяцию
+#  тригонометрическая интерполяция
 a0, a, b = trig_interpolation(x, y, N)
 
-# Записываем результаты в файл output.txt
 write_output('output.txt', xmin, xmax, a0, a, b)
 
-# Визуализируем аппроксимацию
+# вывод аппроксимации
 plot_approximation(x, y, a0, a, b, N, xmin, xmax)
-
-
+0 1 2 3 4 5 6 7 8 9 10
+1 1.8 3.2 4.1 3.9 2.8 2.3 1.9 2.1 1.5 1.0
+0 10
 
 
 
