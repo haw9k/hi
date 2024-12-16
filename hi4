@@ -1,0 +1,71 @@
+import numpy as np
+
+# Определяем функции системы
+def f1(x, y):
+    return x**2 + y**2 - 4  # Первое уравнение
+
+def f2(x, y):
+    return x**2 - y - 1  # Второе уравнение
+
+# Частные производные
+def df1_dx(x, y):
+    return 2 * x
+
+def df1_dy(x, y):
+    return 2 * y
+
+def df2_dx(x, y):
+    return 2 * x
+
+def df2_dy(x, y):
+    return -1
+
+# Метод Ньютона для одной итерации
+def newton_iteration(x, y):
+    # Создаем матрицу Якоби
+    J = np.array([[df1_dx(x, y), df1_dy(x, y)],
+                  [df2_dx(x, y), df2_dy(x, y)]])
+    # Вектор функций
+    F = np.array([-f1(x, y), -f2(x, y)])
+    # Проверяем определитель матрицы Якоби
+    det = np.linalg.det(J)
+    if abs(det) < 1e-10:  # Порог для малых значений определителя
+        raise ValueError("Матрица Якоби близка к вырожденной.")
+    # Решаем систему J * delta = F
+    delta = np.linalg.solve(J, F)
+    # Возвращаем обновленные значения x и y
+    return x + delta[0], y + delta[1]
+
+# Метод Зейделя с вложенным методом Ньютона
+def solve_system_by_zeidel_newton(x0, y0, tol=1e-6, max_iter=100):
+    x, y = x0, y0  # Начальные приближения
+    for _ in range(max_iter):  # Внешний цикл (Зейдель)
+        x_prev, y_prev = x, y  # Сохраняем предыдущие значения
+        for _ in range(10):  # Внутренний цикл (Ньютон)
+            try:
+                x, y = newton_iteration(x, y)
+            except ValueError:
+                # Если матрица Якоби вырожденная, сдвигаем значения
+                x += 0.05
+                y += 0.05
+                continue
+            # Проверяем остатки функций
+            if abs(f1(x, y)) < tol and abs(f2(x, y)) < tol:
+                break
+        # Проверяем сходимость по изменениям x и y
+        if abs(x - x_prev) < tol and abs(y - y_prev) < tol:
+            return f"Решение: x = {x:.6f}, y = {y:.6f}"
+    # Возврат промежуточного решения, если метод не сошелся
+    return f"Метод не сошелся. Последние значения: x = {x:.6f}, y = {y:.6f}"
+
+# Чтение начальных приближений из файла input.txt
+with open("input.txt", "r", encoding="utf-8") as file:
+    x0, y0 = map(float, file.readline().split())
+
+# Решение системы уравнений
+result = solve_system_by_zeidel_newton(x0, y0)
+
+# Запись результата в файл output.txt
+with open("output.txt", "w", encoding="utf-8") as file:
+    file.write(result)
+
