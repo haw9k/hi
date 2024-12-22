@@ -1,0 +1,71 @@
+import math
+
+
+# Функция для вычисления интеграла по методу трапеций
+def trapezoidal_rule(a, b, n, func):
+    h = (b - a) / n  # Шаг
+    total = (func(a) + func(b)) / 2  # Начальная сумма (концы интеграла)
+    for i in range(1, n):
+        total += func(a + i * h)  # Добавляем значения в середине интервала
+    return total * h  # Умножаем на шаг для получения результата
+
+
+
+def f(x):
+    return x ** 2  # Пример функции, которую интегрируем (x^2)
+
+
+# Основная функция для решения уравнения
+def solve_equation(a, b, func, epsilon=1e-6):
+    x_lower = a
+    x_upper = a + 1  # Начальное приближение, которое увеличиваем при каждой итерации
+
+    # Ищем x, где интеграл от a до x будет равен b
+    while trapezoidal_rule(a, x_upper, 1000, func) < b:
+        x_upper += 1  # Увеличиваем x, пока интеграл не станет больше или равным b
+
+    # Бинарный поиск для точного решения
+    while x_upper - x_lower > epsilon:
+        x_mid = (x_upper + x_lower) / 2
+        integral = trapezoidal_rule(a, x_mid, 1000, func)
+
+        if integral < b:
+            x_lower = x_mid  # Если интеграл меньше b, продолжаем искать вправо
+        else:
+            x_upper = x_mid  # Если интеграл больше b, продолжаем искать влево
+
+    return (x_upper + x_lower) / 2  # Возвращаем среднее значение как приближённый результат
+
+
+# Чтение параметров из файла
+def read_params(filename):
+    with open(filename, 'r') as file:
+        params = file.readlines()
+        a = float(params[0].strip())  # Начальная граница интегрирования
+        b = float(params[1].strip())  # Целевая величина для интеграла
+        n = int(params[2].strip())  # Количество шагов для метода трапеций
+        return a, b, n
+
+
+# Запись ответа в файл
+def write_answer(filename, answer):
+    with open(filename, 'w') as file:
+        file.write(f"Ответ: {answer}\n")
+
+
+# Основная программа
+def main():
+    # Читаем параметры из файла input.txt
+    a, b, n = read_params('input.txt')
+
+    # Ищем значение x, при котором интеграл от a до x равен b
+    x = solve_equation(a, b, f, epsilon=1e-6)
+
+    # Записываем результат в файл output.txt
+    write_answer('output.txt', x)
+
+
+
+# Запуск программы
+if __name__ == '__main__':
+    main()
