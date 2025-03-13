@@ -1,0 +1,53 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import math
+def f(x):
+    return x ** 2 - 4 * x + 6
+def golden_section_search(a, b, tol=1e-5):
+    phi = (1 + np.sqrt(5)) / 2
+    resphi = 2 - phi
+
+    x1 = a + resphi * (b - a)
+    x2 = b - resphi * (b - a)
+    f1, f2 = f(x1), f(x2)
+
+    iter_count = 0
+    while abs(b - a) > tol:
+        iter_count += 1
+        if f1 < f2:
+            b, x2, f2 = x2, x1, f1
+            x1 = a + resphi * (b - a)
+            f1 = f(x1)
+        else:
+            a, x1, f1 = x1, x2, f2
+            x2 = b - resphi * (b - a)
+            f2 = f(x2)
+
+    xmin = (a + b) / 2
+    return xmin, f(xmin), (a, b), iter_count
+
+a, b = 0, 10
+tolerance = 1e-5
+expected_iterations = math.ceil((math.log(b - a) / tolerance) / math.log(1.618))
+xmin, fmin, final_interval, actual_iterations = golden_section_search(a, b, tolerance)
+error = abs(final_interval[1] - final_interval[0])
+
+
+print(f"Минимальное значение x: {xmin:.5f}")
+print(f"Значение функции в этой точке: {fmin:.5f}")
+print(f"Конечный интервал: {final_interval}")
+print(f"Количество итераций: {actual_iterations}")
+print(f"Ожидаемое количество итераций: {expected_iterations}")
+print(f"Погрешность метода: {error:.5e}")
+
+
+x_vals = np.linspace(a, b, 100)
+y_vals = f(x_vals)
+plt.plot(x_vals, y_vals, label='f(x) = x^2 - 4x + 6')
+plt.axvline(xmin, color='r', linestyle='--', label=f'x_min = {xmin:.5f}')
+plt.xlabel('x')
+plt.ylabel('f(x)')
+plt.title('График функции')
+plt.legend()
+plt.grid()
+plt.show()
