@@ -1,53 +1,91 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import math
+
 def f(x):
     return x ** 2 - 4 * x + 6
-def golden_section_search(a, b, tol=1e-5):
+
+# Метод дихотомии
+def dichotomy(a, b, l, e):
+    k = 0
+    while abs(b - a) > l:
+        y = (a + b - e) / 2
+        z = (a + b + e) / 2
+        if f(y) <= f(z):
+            b = z
+        else:
+            a = y
+        k += 1
+    x_min = (a + b) / 2
+    return x_min, f(x_min), (a, b), k, 2 * k + 2, abs(b - a)
+
+# Метод Фибоначчи
+def fibonacci_method(a, b, l, e):
+    fib = [1, 1]
+    while fib[-1] < (b - a) * 2 / l:
+        fib.append(fib[-1] + fib[-2])
+    N = len(fib) - 1
+    y = a + (fib[N - 2] / fib[N]) * (b - a)
+    z = a + (fib[N - 1] / fib[N]) * (b - a)
+    k = 0
+    while k < N - 3:
+        if f(y) <= f(z):
+            b = z
+            z = y
+            y = a + (fib[N - k - 3] / fib[N - k - 1]) * (b - a)
+        else:
+            a = y
+            y = z
+            z = a + (fib[N - k - 2] / fib[N - k - 1]) * (b - a)
+        k += 1
+    x_min = (a + b) / 2
+    return x_min, f(x_min), (a, b), k, N, abs(b - a)
+
+# Метод золотого сечения
+def golden_section(a, b, l):
     phi = (1 + np.sqrt(5)) / 2
     resphi = 2 - phi
-
+    k = 0
     x1 = a + resphi * (b - a)
     x2 = b - resphi * (b - a)
-    f1, f2 = f(x1), f(x2)
-
-    iter_count = 0
-    while abs(b - a) > tol:
-        iter_count += 1
-        if f1 < f2:
-            b, x2, f2 = x2, x1, f1
+    while abs(b - a) > l:
+        if f(x1) <= f(x2):
+            b = x2
+            x2 = x1
             x1 = a + resphi * (b - a)
-            f1 = f(x1)
         else:
-            a, x1, f1 = x1, x2, f2
+            a = x1
+            x1 = x2
             x2 = b - resphi * (b - a)
-            f2 = f(x2)
+        k += 1
+    N = k + 1
+    x_min = (a + b) / 2
+    return float(x_min), float(f(x_min)), (float(a), float(b)), k, N, float(abs(b - a))
 
-    xmin = (a + b) / 2
-    return xmin, f(xmin), (a, b), iter_count
+# Построение графика
+def plot_function(x_min, method_name):
+    x_vals = np.linspace(0, 10, 100)
+    y_vals = f(x_vals)
+    plt.plot(x_vals, y_vals, label='y = x^2 - 4x + 6')
+    plt.scatter(x_min, f(x_min), color='red', s=100, label=f'Min: {x_min:.3f}')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.title(f'График функции ({method_name})')
+    plt.legend()
+    plt.grid()
+    plt.show()
 
-a, b = 0, 10
-tolerance = 1e-5
-expected_iterations = math.ceil((math.log(b - a) / tolerance) / math.log(1.618))
-xmin, fmin, final_interval, actual_iterations = golden_section_search(a, b, tolerance)
-error = abs(final_interval[1] - final_interval[0])
+# Тестирование методов
+a, b, l, e = 0, 10, 0.2, 0.01
 
+result_dichotomy = dichotomy(a, b, l, e)
+print("Метод дихотомии:", result_dichotomy)
+plot_function(result_dichotomy[0], "Метод дихотомии")
 
-print(f"Минимальное значение x: {xmin:.5f}")
-print(f"Значение функции в этой точке: {fmin:.5f}")
-print(f"Конечный интервал: {final_interval}")
-print(f"Количество итераций: {actual_iterations}")
-print(f"Ожидаемое количество итераций: {expected_iterations}")
-print(f"Погрешность метода: {error:.5e}")
+result_fibonacci = fibonacci_method(a, b, l, e)
+print("Метод Фибоначчи:", result_fibonacci)
+plot_function(result_fibonacci[0], "Метод Фибоначчи")
 
+result_golden = golden_section(a, b, l)
+print("Метод золотого сечения:", result_golden)
+plot_function(result_golden[0], "Метод золотого сечения")
 
-x_vals = np.linspace(a, b, 100)
-y_vals = f(x_vals)
-plt.plot(x_vals, y_vals, label='f(x) = x^2 - 4x + 6')
-plt.axvline(xmin, color='r', linestyle='--', label=f'x_min = {xmin:.5f}')
-plt.xlabel('x')
-plt.ylabel('f(x)')
-plt.title('График функции')
-plt.legend()
-plt.grid()
-plt.show()
