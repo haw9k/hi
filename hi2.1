@@ -1,39 +1,35 @@
 def read_matrix(filename):
-    """Читает квадратную матрицу из файла"""
     with open(filename, 'r') as f:
         matrix = [list(map(float, line.split())) for line in f]
     return matrix
 
 
 def write_results(filename, eigenvalues):
-    """Записывает собственные значения в файл"""
     with open(filename, 'w') as f:
         for value in eigenvalues:
             f.write(f"{value:.6f}\n")
 
 
 def lu_decomposition(matrix):
-    """Ручное LU-разложение"""
     n = len(matrix)
     L = [[0] * n for _ in range(n)]
     U = [[0] * n for _ in range(n)]
 
     for i in range(n):
-        L[i][i] = 1  # Диагональные элементы L равны 1
+        L[i][i] = 1  
 
-        for j in range(i, n):  # Заполняем U
+        for j in range(i, n): 
             U[i][j] = matrix[i][j] - sum(L[i][k] * U[k][j] for k in range(i))
 
-        for j in range(i + 1, n):  # Заполняем L
+        for j in range(i + 1, n):  
             if U[i][i] == 0:
-                return None, None  # Если разложение невозможно
+                return None, None 
             L[j][i] = (matrix[j][i] - sum(L[j][k] * U[k][i] for k in range(i))) / U[i][i]
 
     return L, U
 
 
 def determinant_upper(U):
-    """Вычисляет определитель верхнетреугольной матрицы U"""
     if U is None:
         return None
     det = 1
@@ -43,13 +39,12 @@ def determinant_upper(U):
 
 
 def find_spectrum_lu(matrix, tolerance=1e-7, max_iterations=100):
-    """Находит спектр (собственные значения) через LU-разложение"""
-
+   
     n = len(matrix)
     spectrum = []
 
-    # Оценка границ поиска по следу и норме матрицы
-    trace = sum(matrix[i][i] for i in range(n))  # Сумма диагональных элементов
+
+    trace = sum(matrix[i][i] for i in range(n))  
     lambda_min = trace / n - 20
     lambda_max = trace / n + 20
     step = 0.5
@@ -63,11 +58,11 @@ def find_spectrum_lu(matrix, tolerance=1e-7, max_iterations=100):
         detU = determinant_upper(U)
 
         if detU is None:
-            continue  # Пропускаем, если LU-разложение невозможно
+            continue 
 
-        # Проверяем смену знака детерминанта, чтобы найти интервал с корнем
+       
         if prev_det is not None and prev_det * detU < 0:
-            # Улучшаем значение λ через бисекцию
+        
             l_low, l_high = lam - step, lam
             for _ in range(max_iterations):
                 l_mid = (l_low + l_high) / 2
@@ -76,7 +71,7 @@ def find_spectrum_lu(matrix, tolerance=1e-7, max_iterations=100):
                 detU_mid = determinant_upper(U_mid)
 
                 if detU_mid is None:
-                    break  # Пропускаем, если LU-разложение не удалось
+                    break 
 
                 if abs(detU_mid) < tolerance:
                     spectrum.append(l_mid)
@@ -88,16 +83,16 @@ def find_spectrum_lu(matrix, tolerance=1e-7, max_iterations=100):
 
         prev_det = detU
 
-    return sorted(set(spectrum))  # Убираем дубликаты и сортируем
+    return sorted(set(spectrum)) 
 
 
 if __name__ == "__main__":
     input_file = "matrix.txt"
     output_file = "spectrum.txt"
 
-    matrix = read_matrix(input_file)  # Читаем матрицу
-    spectrum = find_spectrum_lu(matrix)  # Ищем спектр через LU
+    matrix = read_matrix(input_file)  
+    spectrum = find_spectrum_lu(matrix) 
     if spectrum:
-        write_results(output_file, spectrum)  # Записываем результаты
+        write_results(output_file, spectrum) 
     else:
         print("Собственные значения не найдены!")
