@@ -1,0 +1,80 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def f(x):
+    """Оптимизируемая функция: f(x) = x^2 - 2x + 3"""
+    return x ** 2 - 4 * x + 6
+
+
+def xi(a, b):
+    """Формула для вычисления точки x"""
+    return a + ((3 - np.sqrt(5)) / 2) * (b - a)
+
+
+def yi(a, b, x):
+    """Формула для вычисления точки y"""
+    return a + b - x
+
+
+def golden_section(a, b, l):
+    """Метод золотого сечения"""
+    k = 0  # Количество итераций
+
+    print("\n=== Итерации ===")
+    while abs(b - a) > l:
+        x = xi(a, b)
+        y = yi(a, b, x)
+
+        print(f"Итерация {k + 1}: a = {a:.6f}, b = {b:.6f}, x = {x:.6f}, y = {y:.6f}, |b-a| = {abs(b - a):.6f}")
+
+        if f(x) <= f(y):
+            b = y
+            x = a + b - x
+        else:
+            a = x
+            y = a + b - y
+
+        k += 1
+
+    N = k + 1  # Общее количество вычислений функции
+    answer = {
+        'x': (a + b) / 2,
+        'f(x)': f((a + b) / 2),
+        'L': [float(a), float(b)],
+        'k': k,
+        'N': N,
+        'R': 0.618 ** (N - 1)
+    }
+
+    print("\n=== Итоговые параметры ===")
+    for key, value in answer.items():
+        print(f"{key}: {value}")
+
+    return answer
+
+
+# Входные параметры
+a, b = 0, 10
+l = 0.2
+
+# Запуск метода золотого сечения
+answer = golden_section(a, b, l)
+
+# Визуализация графика функции с найденной точкой минимума
+min_x = answer['x']
+min_y = f(min_x)
+
+X = np.linspace(-2, 8, 100)
+Y = f(X)
+
+plt.plot(X, Y, label='y = x^2 - 4x + 6', color='red')
+plt.scatter(min_x, min_y, color='blue', s=100, label=f'Точка минимума ({min_x:.5f}, {min_y:.5f})')
+
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('График функции y = x^2 - 4x + 6')
+
+plt.legend()
+plt.grid(True)
+plt.show()
