@@ -1,0 +1,95 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def f(x):
+    return x ** 2 - 4 * x + 6
+
+
+def fibonacci_sequence(n):
+    """Генерация последовательности Фибоначчи до n"""
+    fib = [1, 1]
+    while fib[-1] < n:
+        fib.append(fib[-1] + fib[-2])
+    return fib
+
+
+def fibonacci_method(a, b, l, e):
+    """Метод Фибоначчи для минимизации функции"""
+    k = 0
+    fib_arr = fibonacci_sequence((b - a) / l + 1)  # Учли границы
+    N = len(fib_arr) - 1  # Количество итераций
+
+    y = a + (fib_arr[N - 2] / fib_arr[N]) * (b - a)
+    z = a + (fib_arr[N - 1] / fib_arr[N]) * (b - a)
+
+    print(f"Начальный отрезок: [{a}, {b}]")
+    print(f"Числа Фибоначчи: {fib_arr}\n")
+
+    while k < N - 2:  # Теперь правильно учитываем N-2
+        print(f"Итерация {k + 1}: y = {y:.6f}, z = {z:.6f}")
+
+        if f(y) <= f(z):
+            b = z
+            z = y
+            y = a + (fib_arr[N - k - 3] / fib_arr[N - k - 1]) * (b - a)
+        else:
+            a = y
+            y = z
+            z = a + (fib_arr[N - k - 2] / fib_arr[N - k - 1]) * (b - a)
+
+        k += 1
+
+    # Проверка yN-2 и zN-2
+    print(f"yN-2 = {y:.6f}, zN-2 = {z:.6f}")
+
+    # Проверка последнего интервала
+    if f(y) <= f(z):
+        b = z
+    else:
+        a = y
+
+    x_opt = (a + b) / 2
+    f_opt = f(x_opt)
+    R = 1 / fib_arr[-1]
+
+    answer = {
+        'x': x_opt,
+        'f(x)': f_opt,
+        'k': k,
+        'Fib': fib_arr,
+        'Ln': f"[{a}:{b}]",
+        'N': N,
+        'R': R
+    }
+
+    print("\n=== Итоговые параметры ===")
+    for key, value in answer.items():
+        print(f"{key}: {value}")
+
+    return answer
+
+
+# Входные параметры
+a, b = 0, 10
+l = 0.5
+e = 0.2  # Точность
+
+# Запуск метода Фибоначчи
+answer = fibonacci_method(a, b, l, e)
+
+# Визуализация функции и минимума
+X = np.linspace(-2, 8, 100)
+Y = f(X)
+
+plt.plot(X, Y, label='y = x^2 - 4x + 6', color='red')
+plt.scatter(answer['x'], answer['f(x)'], color='blue', s=100,
+            label=f'Точка минимума ({answer["x"]:.5f}, {answer["f(x)"]:.5f})')
+
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Метод Фибоначчи для y = x^2 - 4x + 6')
+
+plt.legend()
+plt.grid(True)
+plt.show()
