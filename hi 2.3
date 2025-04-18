@@ -1,0 +1,42 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+f = lambda y: -2 * y
+exact_solution = lambda x: np.exp(-2 * x)
+y0 = 1
+x0, X = 0, 5
+h = 0.5
+
+
+def implicit_euler(f, y0, x0, X, h):
+    N = int((X - x0) / h)
+    x = np.linspace(x0, X, N + 1)
+    y = np.zeros(N + 1)
+    y[0] = y0
+    for n in range(N):
+        y[n + 1] = y[n] / (1 + 2 * h)
+    return x, y
+
+
+
+x_h, y_h = implicit_euler(f, y0, x0, X, h)
+x_h2, y_h2 = implicit_euler(f, y0, x0, X, h / 2)
+
+
+x_exact = np.linspace(x0, X, 1000)
+y_exact = exact_solution(x_exact)
+
+
+
+
+plt.figure(figsize=(10, 6))
+plt.plot(x_exact, y_exact, label='Точное решение', linewidth=2)
+plt.plot(x_h, y_h, 'o--', label=f'Неявный Эйлер (h={h})')
+plt.plot(x_h2, y_h2, 's--', label=f'Неявный Эйлер (h={h / 2})')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Сравнение точного и численных решений (неявный Эйлер)')
+plt.legend()
+plt.grid(True)
+plt.show()
