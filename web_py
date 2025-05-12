@@ -1,0 +1,73 @@
+class Pet:
+    def __init__(self, name, species, age):
+        self.name = name
+        self.species = species
+        self.age = age
+        self._hunger = 5
+        self._happiness = 5
+
+    @property
+    def hunger(self):
+        return self._hunger
+
+    @hunger.setter
+    def hunger(self, value):
+        self._hunger = max(0, min(10, value))
+
+    @property
+    def happiness(self):
+        return self._happiness
+
+    @happiness.setter
+    def happiness(self, value):
+        self._happiness = max(0, min(10, value))
+
+    def feed(self, food):
+        food_values = {"мясо": 3, "рыба": 2, "зерно": 1}
+        hunger_increase = food_values.get(food, 1)
+        self.hunger += hunger_increase
+        self.happiness += 1
+
+    def play(self, activity):
+        self.happiness += 2
+        self.hunger += 1
+
+    def is_hungry(self):
+        return self.hunger > 5
+
+    def is_happy(self):
+        return self.happiness > 5
+
+    def sleep(self):
+        self.hunger -= 2
+        self.happiness += 2
+
+    def __str__(self):
+        return f"{self.name}, {self.species}, возраст: {self.age}, голод: {self.hunger}, счастье: {self.happiness}"
+
+
+class TrainedDog(Pet):
+    def __init__(self, name, age, tricks=None):
+        super().__init__(name, "Собака", age)
+        self.tricks = tricks if tricks else []
+
+    def perform_trick(self, trick_name):
+        if trick_name in self.tricks:
+            print(f"{self.name} выполняет трюк: {trick_name}!")
+            self.happiness += 1
+        else:
+            print(f"{self.name} не умеет выполнять трюк: {trick_name}.")
+
+    def __str__(self):
+        return super().__str__() + f", умеет трюки: {', '.join(self.tricks) if self.tricks else 'нет'}"
+
+
+dog = TrainedDog("Шарик", 4, ["сидеть", "дай лапу"])
+print(dog)
+dog.feed("мясо")
+dog.play("играть с мячом")
+dog.perform_trick("сидеть")
+dog.perform_trick("лаять")
+dog.feed("мясо")
+dog.perform_trick("кувырок")
+print(dog)
