@@ -1,0 +1,117 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+
+def f(x, y):
+    return x**2 + 5*y**2 + x*y + x
+
+#  Градиент 
+def calc_gradient(x, y):
+    dx = 2*x + y + 1
+    dy = 10*y + x
+    return np.array([dx, dy])
+
+#  Норма вектора 
+def calc_norm(x, y):
+    return np.sqrt(x**2 + y**2)
+
+#  Вычисление шага t, если Гессиан не положительно определён 
+def calc_t(x, y, dx, dy):
+    numerator = 2*x*dx + 10*y*dy + x*dy + y*dx + dx
+    denominator = 2*dx**2 + 10*dy**2 + 2*dy*dx
+    return numerator / denominator
+
+
+def newton_method(x, y, e1, e2, M, HR):
+    k = 1
+    count = 0
+    while k <= M:
+        grad = calc_gradient(x, y)
+        dx, dy = grad
+
+        if calc_norm(dx, dy) < e1:
+            return {'x': x, 'y': y, 'f(x)': f(x, y), 'stop': '||∇f(x)|| < e1', 'k': k}
+
+        if k >= M:
+            return {'x': x, 'y': y, 'f(x)': f(x, y), 'stop': f'k = {M}', 'k': k}
+
+        # Проверка положительной определённости Гессиана
+        if HR[0][0] > 0 and (HR[0][0]*HR[1][1] - HR[0][1]*HR[1][0]) > 0:
+            d = -HR @ grad
+            t = 1
+        else:
+            d = -grad
+            t = calc_t(x, y, dx, dy)
+
+        new_x = x + t * d[0]
+        new_y = y + t * d[1]
+
+        if calc_norm(new_x - x, new_y - y) < e2 and abs(f(new_x, new_y) - f(x, y)) < e2:
+            if count == 1:
+                return {'x': new_x, 'y': new_y, 'f(x)': f(new_x, new_y),
+                        'stop': '||x_k+1 - x_k|| < e2 и |f(x_k+1) - f(x_k)| < e2', 'k': k}
+            else:
+                count += 1
+        else:
+            count = 0
+
+        x, y = new_x, new_y
+        k += 1
+
+    return {'x': x, 'y': y, 'f(x)': f(x, y), 'stop': f'Достигнут предел итераций k = {M}', 'k': k}
+
+
+def plot_graphs(min_x, min_y):
+    x = np.linspace(-5, 5, 400)
+    y = np.linspace(-3, 3, 400)
+    X, Y = np.meshgrid(x, y)
+    Z = f(X, Y)
+
+    fig = plt.figure(figsize=(12, 5))
+
+    # 3D-график
+    ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+    ax1.plot_surface(X, Y, Z, cmap='viridis', alpha=0.9)
+    ax1.set_title('3D График функции: f(x, y) = x² + 5y² + xy + x')
+    ax1.set_xlabel('X')
+    ax1.set_ylabel('Y')
+    ax1.set_zlabel('Z')
+    ax1.scatter(min_x, min_y, f(min_x, min_y), color='red', s=50, label='Точка минимума')
+    ax1.legend()
+
+    
+    ax2 = fig.add_subplot(1, 2, 2)
+    contours = ax2.contour(X, Y, Z, levels=30, cmap='viridis')
+    ax2.clabel(contours, inline=True, fontsize=8)
+    ax2.set_title('Контурный график (линии уровня)')
+    ax2.set_xlabel('X')
+    ax2.set_ylabel('Y')
+    ax2.scatter(min_x, min_y, color='red', s=50, label='Точка минимума')
+    ax2.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+def main():
+    x = 1.0
+    y = 1.0
+    e1 = 0.1
+    e2 = 0.15
+    M = 100
+
+    A = np.array([[2, 1],
+                  [1, 10]])
+    HR = np.linalg.inv(A)
+
+    result = newton_method(x, y, e1, e2, M, HR)
+
+    print("Результат метода Ньютона:")
+    for key, value in result.items():
+        print(f"{key} = {value}")
+
+    
+    plot_graphs(result['x'], result['y'])
+
+if __name__ == '__main__':
+    main()
