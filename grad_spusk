@@ -1,0 +1,104 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+
+def f(x, y):
+    return x**2 + 5*y**2 + x*y + x
+
+# Градиент функции
+def calc_gradient(x, y):
+    dx = 2*x + y + 1
+    dy = 10*y + x
+    return np.array([dx, dy])
+
+# Норма вектора
+def calc_norm(dx, dy):
+    return np.sqrt(dx**2 + dy**2)
+
+# Аналитический шаг
+def calc_t(x, y, dx, dy):
+    numerator = 2*x*dx + 10*y*dy + x*dy + y*dx + dx
+    denominator = 2*dx**2 + 10*dy**2 + 2*dy*dx
+    return numerator / denominator
+
+def gradient_descent(x0, y0, e1, e2, M):
+    x, y = x0, y0
+    i = 1
+    repeat_count = 0
+
+    while i <= M:
+        grad = calc_gradient(x, y)
+        dx, dy = grad
+
+        if calc_norm(dx, dy) < e1:
+            return x, y, f(x, y), '||∇f(x_k)|| < e1', i
+
+        t = calc_t(x, y, dx, dy)
+        new_x = x - t * dx
+        new_y = y - t * dy
+
+        if calc_norm(x - new_x, y - new_y) < e2 and abs(f(new_x, new_y) - f(x, y)) < e2:
+            if repeat_count == 1:
+                return new_x, new_y, f(new_x, new_y), '||x_{k+1} - x_k|| < e2 и |f(x_{k+1}) - f(x_k)| < e2', i
+            else:
+                repeat_count += 1
+        else:
+            repeat_count = 0
+
+        x, y = new_x, new_y
+        i += 1
+
+    return x, y, f(x, y), 'Количество итераций > M', i
+
+
+def plot_graphs(min_x, min_y):
+    x = np.linspace(-5, 5, 400)
+    y = np.linspace(-3, 3, 400)
+    X, Y = np.meshgrid(x, y)
+    Z = f(X, Y)
+
+
+    fig = plt.figure(figsize=(12, 5))
+    ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+    ax1.plot_surface(X, Y, Z, cmap='viridis', alpha=0.9)
+    ax1.set_title('3D График функции: f(x, y) = x² + 5y² + xy + x')
+    ax1.set_xlabel('X')
+    ax1.set_ylabel('Y')
+    ax1.set_zlabel('Z')
+    ax1.scatter(min_x, min_y, f(min_x, min_y), color='red', s=50, label='Точка минимума')
+    ax1.legend()
+
+   
+    ax2 = fig.add_subplot(1, 2, 2)
+    contours = ax2.contour(X, Y, Z, levels=30, cmap='viridis')
+    ax2.clabel(contours, inline=True, fontsize=8)
+    ax2.set_title('Контурный график (линии уровня)')
+    ax2.set_xlabel('X')
+    ax2.set_ylabel('Y')
+    ax2.scatter(min_x, min_y, color='red', s=50, label='Точка минимума')
+    ax2.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
+def main():
+    x0 = 1.0
+    y0 = 1.0
+    e1 = 0.1
+    e2 = 0.15
+    M = 100
+
+    x, y, fval, reason, iterations = gradient_descent(x0, y0, e1, e2, M)
+
+    print("Результаты градиентного спуска:")
+    print(f"Координаты минимума: (x, y) = ({x:.6f}, {y:.6f})")
+    print(f"Значение функции в минимуме: f(x, y) = {fval:.6f}")
+    print(f"Причина остановки: {reason}")
+    print(f"Количество итераций: {iterations}")
+
+    plot_graphs(x, y)
+
+if __name__ == '__main__':
+    main()
