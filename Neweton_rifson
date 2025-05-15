@@ -1,0 +1,145 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+
+def f(x, y):
+    return x**2 + 5*y**2 + x*y + x
+
+# Градиент функции
+def gradient(x, y):
+    dfx = 2*x + y + 1
+    dfy = 10*y + x
+    return np.array([dfx, dfy])
+
+# Норма градиента
+def norm(dx, dy):
+    return np.sqrt(dx**2 + dy**2)
+
+# Функция вдоль направления
+def f_along_direction(x, y, dx, dy, t):
+    xt = x + t * dx
+    yt = y + t * dy
+    return f(xt, yt)
+
+# Золотое сечение
+def golden_section(x, y, dx, dy, a=0, b=1, l=0.01, max_iter=1000):
+    phi = (3 - np.sqrt(5)) / 2
+    t1 = a + phi * (b - a)
+    t2 = a + b - t1
+    f1 = f_along_direction(x, y, dx, dy, t1)
+    f2 = f_along_direction(x, y, dx, dy, t2)
+
+    for _ in range(max_iter):
+        if abs(b - a) < l:
+            break
+        if f1 <= f2:
+            b = t2
+            t2 = t1
+            f2 = f1
+            t1 = a + b - t1
+            f1 = f_along_direction(x, y, dx, dy, t1)
+        else:
+            a = t1
+            t1 = t2
+            f1 = f2
+            t2 = a + b - t2
+            f2 = f_along_direction(x, y, dx, dy, t2)
+    return (a + b) / 2
+
+# Подбор шага
+def calc_t(x, y, dx, dy):
+    return golden_section(x, y, dx, dy)
+
+
+def newton(x, y, e1, e2, M, HR):
+    k = 0
+    count = 0
+    path = [(x, y)]
+    while k <= M:
+        grad = gradient(x, y)
+        dx, dy = grad
+        if norm(dx, dy) < e1:
+            return {'x': float(x), 'y': float(y), 'f(x)': float(f(x, y)), 'stop': '||∇f(x)|| < e1', 'k': k, 'path': path}
+
+        if k >= M:
+            return {'x': float(x), 'y': float(y), 'f(x)': float(f(x, y)), 'stop': f'k = {M}', 'k': k, 'path': path}
+
+        if HR[0][0] > 0 and (HR[0][0]*HR[1][1] - HR[0][1]*HR[1][0]) > 0:
+            d = -HR @ grad
+        else:
+            d = -grad
+        t = calc_t(x, y, d[0], d[1])
+        new_x = x + t * d[0]
+        new_y = y + t * d[1]
+        path.append((new_x, new_y))
+        if norm(new_x - x, new_y - y) < e2 and abs(f(new_x, new_y) - f(x, y)) < e2:
+            if count == 1:
+                return {
+                    'x': float(new_x), 'y': float(new_y), 'f(x)': float(f(new_x, new_y)),
+                    'stop': '||x_{k+1} - x_k|| < e2 и |f(x_{k+1}) - f(x_k)| < e2', 'k': k, 'path': path
+                }
+            else:
+                count += 1
+        else:
+            count = 0
+        x, y = new_x, new_y
+        k += 1
+    return {'x': float(x), 'y': float(y), 'f(x)': float(f(x, y)), 'stop': 'достигнуто M', 'k': k, 'path': path}
+
+
+def plot_results(result):
+    x_vals = np.linspace(-5, 5, 400)
+    y_vals = np.linspace(-3, 3, 400)
+    X, Y = np.meshgrid(x_vals, y_vals)
+    Z = f(X, Y)
+
+
+    fig = plt.figure(figsize=(12, 5))
+    ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+    ax1.plot_surface(X, Y, Z, cmap='viridis', alpha=0.8)
+    ax1.set_title('3D График функции: f(x, y) = x² + 5y² + xy + x')
+    ax1.set_xlabel('X')
+    ax1.set_ylabel('Y')
+    ax1.set_zlabel('f(x, y)')
+    ax1.scatter(result['x'], result['y'], f(result['x'], result['y']), color='red', s=50, label='Минимум')
+    ax1.legend()
+
+    
+    ax2 = fig.add_subplot(1, 2, 2)
+    cp = ax2.contour(X, Y, Z, levels=40, cmap='viridis')
+    ax2.clabel(cp, inline=True, fontsize=8)
+    ax2.set_title('Контурный график + траектория')
+    ax2.set_xlabel('X')
+    ax2.set_ylabel('Y')
+
+    path = np.array(result['path'])
+    ax2.plot(path[:, 0], path[:, 1], 'o-r', label='Траектория итераций')
+    ax2.scatter(result['x'], result['y'], color='red', s=50, label='Минимум')
+    ax2.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+def main():
+    x = 1
+    y = 1
+    e1 = 0.1
+    e2 = 0.15
+    M = 13
+
+    H = np.array([[2, 1], [1, 10]])
+    detH = H[0][0]*H[1][1] - H[0][1]*H[1][0]
+    HR = np.array([[ H[1][1], -H[0][1]], [-H[1][0], H[0][0]]]) / detH
+
+    result = newton(x, y, e1, e2, M, HR)
+
+    print("Результат метода Ньютона-Рафсона:")
+    for key, value in result.items():
+        if key != 'path':
+            print(f"{key} = {value}")
+
+    plot_results(result)
+
+if __name__ == '__main__':
+    main()
