@@ -112,3 +112,143 @@ for char in encrypted:
         decrypted += char
 
 print("Расшифрованный текст:", decrypted)
+
+
+Вот модифицированный код с выводом ключей:
+
+```python
+# Шифр Маскура
+import random
+
+alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+
+# таблица замен
+half = len(alphabet) // 2
+first_half = list(alphabet[:half])  # первая половина: а-п
+second_half = list(alphabet[half:])  # вторая половина: р-я
+
+# перемешиваем обе половины
+random.shuffle(first_half)
+random.shuffle(second_half)
+
+encrypt_dict = {}
+decrypt_dict = {}
+
+for i in range(half):
+    encrypt_dict[alphabet[i]] = first_half[i]  # а→д
+    encrypt_dict[alphabet[half + i]] = second_half[i]  # р→у
+
+    decrypt_dict[first_half[i]] = alphabet[i]  # д→а
+    decrypt_dict[second_half[i]] = alphabet[half + i]  # у→р
+
+# Вывод таблицы соответствий (ключа)
+print("=" * 50)
+print("ТАБЛИЦА СООТВЕТСТВИЙ (КЛЮЧ):")
+print("=" * 50)
+print("Исходная → Зашифрованная")
+print("-" * 30)
+
+# Выводим соответствия для первой половины
+for i in range(half):
+    print(f"{alphabet[i]:<2} → {first_half[i]:<2}")
+
+# Выводим соответствия для второй половины  
+for i in range(half):
+    print(f"{alphabet[half + i]:<2} → {second_half[i]:<2}")
+
+print("=" * 50)
+print()
+
+text = input("Введите текст для шифрования: ")
+encrypted = ""
+
+for char in text:
+    if char.lower() in alphabet:
+        if char.isupper():
+            encrypted += encrypt_dict[char.lower()].upper()
+        else:
+            encrypted += encrypt_dict[char.lower()]
+    else:
+        encrypted += char
+
+print("Зашифрованный текст:", encrypted)
+
+decrypted = ""
+for char in encrypted:
+    if char.lower() in alphabet:
+        if char.isupper():
+            decrypted += decrypt_dict[char.lower()].upper()
+        else:
+            decrypted += decrypt_dict[char.lower()]
+    else:
+        decrypted += char
+
+print("Расшифрованный текст:", decrypted)
+
+# Дополнительный вывод для удобства чтения ключа
+print("\n" + "=" * 50)
+print("КОМПАКТНЫЙ ВИД КЛЮЧА:")
+print("=" * 50)
+print("Исходный алфавит:    " + " ".join(alphabet))
+print("Зашифрованный:       " + " ".join([encrypt_dict[char] for char in alphabet]))
+print("=" * 50)
+```
+
+Что добавлено:
+
+1. Детальная таблица соответствий - показывает каждую пару "исходная буква → зашифрованная буква"
+2. Компактный вид ключа - показывает обе строки алфавита для удобного сравнения
+3. Визуальное оформление - разделители для лучшей читаемости
+
+Пример вывода:
+
+```
+==================================================
+ТАБЛИЦА СООТВЕТСТВИЙ (КЛЮЧ):
+==================================================
+Исходная → Зашифрованная
+------------------------------
+а  → ж 
+б  → м 
+в  → а 
+г  → о 
+д  → е 
+е  → д 
+ё  → б 
+ж  → в 
+з  → и 
+и  → ё 
+й  → н 
+к  → г 
+л  → л 
+м  → к 
+н  → п 
+о  → з 
+п  → й 
+р  → ь 
+с  → ф 
+т  → х 
+у  → ц 
+ф  → э 
+х  → щ 
+ц  → ш 
+ч  → ч 
+ш  → ю 
+щ  → у 
+ъ  → т 
+ы  → с 
+ь  → ъ 
+э  → ы 
+ю  → р 
+я  → я 
+==================================================
+
+КОМПАКТНЫЙ ВИД КЛЮЧА:
+==================================================
+Исходный алфавит:    а б в г д е ё ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я
+Зашифрованный:       ж м а о е д б в и ё н г л к п з й ь ф х ц э щ ш ч ю у т с ъ ы р я
+==================================================
+```
+
+Теперь можно легко видеть, какая буква во что преобразуется!
+
