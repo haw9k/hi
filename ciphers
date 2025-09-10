@@ -1,0 +1,114 @@
+# Шифр Цезаря
+alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+shift = 3
+text = input("Введите текст для шифрования: ")
+encrypted = ""
+
+for char in text:
+    if char.lower() in alphabet:
+        index = alphabet.index(char.lower())
+        new_index = (index + shift) % len(alphabet)
+        if char.isupper():
+            encrypted += alphabet[new_index].upper()
+        else:
+            encrypted += alphabet[new_index]
+    else:
+        encrypted += char
+
+print("Зашифрованный текст:", encrypted)
+decrypted = ""
+for char in encrypted:
+    if char.lower() in alphabet:
+        index = alphabet.index(char.lower())
+        new_index = (index - shift) % len(alphabet)
+        if char.isupper():
+            decrypted += alphabet[new_index].upper()
+        else:
+            decrypted += alphabet[new_index]
+    else:
+        decrypted += char
+
+print("Расшифрованный текст:", decrypted)
+# Шифр Маскура
+import random
+
+alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+
+# таблица замен
+half = len(alphabet) // 2
+first_half = list(alphabet[:half])  # первая половина: а-п
+second_half = list(alphabet[half:])  # вторая половина: р-я
+
+# перемешиваем обе половины
+random.shuffle(first_half)
+random.shuffle(second_half)
+
+encrypt_dict = {}
+decrypt_dict = {}
+
+for i in range(half):
+    encrypt_dict[alphabet[i]] = first_half[i]  # а→д
+    encrypt_dict[alphabet[half + i]] = second_half[i]  # р→у
+
+    decrypt_dict[first_half[i]] = alphabet[i]  # д→а
+    decrypt_dict[second_half[i]] = alphabet[half + i]  # у→р
+
+
+text = input("Введите текст для шифрования: ")
+encrypted = ""
+
+for char in text:
+    if char.lower() in alphabet:
+        if char.isupper():
+            encrypted += encrypt_dict[char.lower()].upper()
+        else:
+            encrypted += encrypt_dict[char.lower()]
+    else:
+        encrypted += char
+
+print("Зашифрованный текст:", encrypted)
+
+
+decrypted = ""
+for char in encrypted:
+    if char.lower() in alphabet:
+        if char.isupper():
+            decrypted += decrypt_dict[char.lower()].upper()
+        else:
+            decrypted += decrypt_dict[char.lower()]
+    else:
+        decrypted += char
+
+print("Расшифрованный текст:", decrypted)
+# Шифр Атбаш
+alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+
+text = input("Введите текст: ")
+
+encrypted = ""
+for char in text:
+    if char.lower() in alphabet:
+        index = alphabet.index(char.lower())
+        new_index = len(alphabet) - 1 - index
+        if char.isupper():
+            encrypted += alphabet[new_index].upper()
+        else:
+            encrypted += alphabet[new_index]
+    else:
+        encrypted += char
+
+print("Зашифрованный текст:", encrypted)
+
+decrypted = ""
+for char in encrypted:
+    if char.lower() in alphabet:
+        index = alphabet.index(char.lower())
+        new_index = len(alphabet) - 1 - index
+        if char.isupper():
+            decrypted += alphabet[new_index].upper()
+        else:
+            decrypted += alphabet[new_index]
+    else:
+        decrypted += char
+
+print("Расшифрованный текст:", decrypted)
