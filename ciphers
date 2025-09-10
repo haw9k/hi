@@ -251,4 +251,83 @@ print("=" * 50)
 ```
 
 Теперь можно легко видеть, какая буква во что преобразуется!
+# Шифр Камасутра
+import random
 
+alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+print(f"Длина алфавита: {len(alphabet)}")
+
+# Делим алфавит пополам
+half = len(alphabet) // 2
+first_half = list(alphabet[:half])    # первая половина
+second_half = list(alphabet[half:])   # вторая половина
+
+# Перемешиваем обе половины
+random.shuffle(first_half)
+random.shuffle(second_half)
+
+# Создаем словарь для шифрования (буква → пара)
+encrypt_dict = {}
+for i in range(len(first_half)):
+    encrypt_dict[first_half[i]] = second_half[i]
+    encrypt_dict[second_half[i]] = first_half[i]
+
+# Вывод ключей (таблицы соответствий)
+print("=" * 60)
+print("ШИФР КАМАСУТРА - ТАБЛИЦА СООТВЕТСТВИЙ:")
+print("=" * 60)
+print("Пары букв для замены:")
+print("-" * 30)
+
+for i in range(len(first_half)):
+    print(f"{first_half[i]} ↔ {second_half[i]}")
+
+print("=" * 60)
+print()
+
+# Компактный вид ключа
+print("Компактный вид ключа:")
+print("Первая половина:  " + " ".join(first_half))
+print("Вторая половина:  " + " ".join(second_half))
+print("=" * 60)
+print()
+
+# Шифрование
+text = input("Введите текст для шифрования: ")
+encrypted = ""
+
+for char in text:
+    if char.lower() in encrypt_dict:
+        if char.isupper():
+            encrypted += encrypt_dict[char.lower()].upper()
+        else:
+            encrypted += encrypt_dict[char.lower()]
+    else:
+        encrypted += char
+
+print("Зашифрованный текст:", encrypted)
+print()
+
+# Расшифровка (тот же процесс, так как шифр симметричный)
+decrypted = ""
+for char in encrypted:
+    if char.lower() in encrypt_dict:
+        if char.isupper():
+            decrypted += encrypt_dict[char.lower()].upper()
+        else:
+            decrypted += encrypt_dict[char.lower()]
+    else:
+        decrypted += char
+
+print("Расшифрованный текст:", decrypted)
+
+# Дополнительная информация
+print("\n" + "=" * 60)
+print("ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ:")
+print("=" * 60)
+print("Полный словарь замен:")
+for i, (key, value) in enumerate(encrypt_dict.items()):
+    if i % 5 == 0:
+        print()
+    print(f"{key}→{value}", end="  ")
+print("\n" + "=" * 60)
