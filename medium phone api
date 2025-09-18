@@ -1,0 +1,305 @@
+— Создание проекта
+
+File → New → New Project → выберите Empty Activity.
+
+Language: Kotlin. Minimum SDK: API 26 (Android 8.0 Oreo).
+
+Назовите проект (например CalculatorApp) и создайте его.
+MainActivity.kt
+package com.example.calculatorapp  // замените на ваш package
+
+import android.os.Bundle
+import android.text.method.DigitsKeyListener
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.example.calculatorapp.databinding.ActivityMainBinding
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
+
+    // аккумулятор (число в поле (3))
+    private var accumulator: Double? = null
+    // текущая выбранная операция '+', '-', '*', '/' или null
+    private var currentOp: Char? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        // Разрешить ввод только цифр, точки и знака минус с клавиатуры
+        binding.inputEditText.keyListener = DigitsKeyListener.getInstance("0123456789-.")
+
+        // Набор кнопок цифр — привязываем обработчики через цикл
+        val digits = listOf(
+            binding.btn0, binding.btn1, binding.btn2, binding.btn3, binding.btn4,
+            binding.btn5, binding.btn6, binding.btn7, binding.btn8, binding.btn9
+        )
+        for ((digit, btn) in digits.withIndex()) {
+            btn.setOnClickListener { appendToInput(digit.toString()) }
+        }
+
+        // Точка
+        binding.btnDot.setOnClickListener {
+            val txt = binding.inputEditText.text.toString()
+            if (!txt.contains(".")) {
+                if (txt.isEmpty()) appendToInput("0.") else appendToInput(".")
+            }
+        }
+
+        // AC — очистка всего
+        binding.btnAC.setOnClickListener {
+            clearAll()
+        }
+
+        // Backspace
+        binding.btnBack.setOnClickListener {
+            val s = binding.inputEditText.text
+            if (s.isNotEmpty()) {
+                s.delete(s.length - 1, s.length)
+            }
+        }
+
+        // Операции
+        binding.btnPlus.setOnClickListener { onOperation('+') }
+        binding.btnMinus.setOnClickListener { onOperation('-') }
+        binding.btnMul.setOnClickListener { onOperation('*') }
+        binding.btnDiv.setOnClickListener { onOperation('/') }
+
+        // Равно
+        binding.btnEq.setOnClickListener { onEquals() }
+    }
+
+    private fun appendToInput(s: String) {
+        binding.inputEditText.append(s)
+    }
+
+    private fun clearAll() {
+        accumulator = null
+        currentOp = null
+        binding.resultTextView.text = ""
+        binding.operationTextView.text = ""
+        binding.inputEditText.text?.clear()
+    }
+
+    private fun onOperation(op: Char) {
+        val inText = binding.inputEditText.text.toString()
+        val inValue = inText.toDoubleOrNull()
+
+        if (inValue != null) {
+            // если аккумулятора ещё нет — просто поместить туда введённое
+            if (accumulator == null) {
+                accumulator = inValue
+            } else {
+                // если была предыдущая операция — применить её
+                if (currentOp != null) {
+                    val r = performOperation(accumulator!!, inValue, currentOp!!)
+                    if (r == null) { // деление на 0
+                        Toast.makeText(this, "Деление на ноль невозможно", Toast.LENGTH_SHORT).show()
+                        return
+                    } else {
+                        accumulator = r
+                    }
+                } else {
+                    accumulator = inValue
+                }
+            }
+            // показываем результат в поле (3) и очищаем поле (1)
+            binding.resultTextView.text = formatNumber(accumulator!!)
+            binding.inputEditText.text?.clear()
+        } else {
+            // если в поле ввода пусто, но есть аккумулятор — просто сменим операцию
+            if (accumulator == null) {
+                // ничего вводить — нет чисел
+                return
+            }
+        }
+
+        currentOp = op
+        binding.operationTextView.text = op.toString()
+    }
+
+    private fun onEquals() {
+        val inText = binding.inputEditText.text.toString()
+        val inValue = inText.toDoubleOrNull()
+
+        if (currentOp == null || accumulator == null || inValue == null) {
+            // нечего вычислять
+            return
+        }
+
+        val r = performOperation(accumulator!!, inValue, currentOp!!)
+        if (r == null) {
+            Toast.makeText(this, "Деление на ноль невозможно", Toast.LENGTH_SHORT).show()
+            return
+        } else {
+            accumulator = r
+        }
+
+        binding.resultTextView.text = formatNumber(accumulator!!)
+        binding.inputEditText.text?.clear()
+        currentOp = null
+        binding.operationTextView.text = ""
+    }
+
+    // возвращает null в случае деления на 0
+    private fun performOperation(a: Double, b: Double, op: Char): Double? {
+        return when (op) {
+            '+' -> a + b
+            '-' -> a - b
+            '*' -> a * b
+            '/' -> if (b == 0.0) null else a / b
+            else -> null
+        }
+    }
+
+    // Форматируем вывод: если целое — без .0
+    private fun formatNumber(x: Double): String {
+        return if (x % 1.0 == 0.0) x.toLong().toString() else x.toString()
+    }
+}
+activity_main.xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Поле ввода (1) -->
+    <EditText
+        android:id="@+id/inputEditText"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:hint="Введите число"
+        android:inputType="numberDecimal|numberSigned"
+        android:gravity="end|center_vertical"
+        android:textSize="20sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <!-- Отображение операции (2) -->
+    <TextView
+        android:id="@+id/operationTextView"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:text=""
+        android:textSize="18sp"
+        android:gravity="start|center_vertical"
+        app:layout_constraintTop_toBottomOf="@id/inputEditText"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <!-- Результат / аккумулятор (3) -->
+    <TextView
+        android:id="@+id/resultTextView"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:text=""
+        android:textSize="24sp"
+        android:gravity="end|center_vertical"
+        app:layout_constraintTop_toBottomOf="@id/operationTextView"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="8dp"/>
+
+    <!-- Кнопки в GridLayout -->
+    <GridLayout
+        android:id="@+id/buttonGrid"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:columnCount="4"
+        android:rowCount="5"
+        app:layout_constraintTop_toBottomOf="@id/resultTextView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:useDefaultMargins="true"
+        android:layout_marginTop="12dp">
+
+        <!-- Первая строка -->
+        <Button android:id="@+id/btnAC" android:text="AC" style="@style/Widget.AppCompat.Button.Colored" />
+        <Button android:id="@+id/btnBack" android:text="⌫" />
+        <Button android:id="@+id/btnMul" android:text="*" />
+        <Button android:id="@+id/btnDiv" android:text="/" />
+
+        <!-- Вторая строка -->
+        <Button android:id="@+id/btn7" android:text="7" />
+        <Button android:id="@+id/btn8" android:text="8" />
+        <Button android:id="@+id/btn9" android:text="9" />
+        <Button android:id="@+id/btnPlus" android:text="+" />
+
+        <!-- Третья строка -->
+        <Button android:id="@+id/btn4" android:text="4" />
+        <Button android:id="@+id/btn5" android:text="5" />
+        <Button android:id="@+id/btn6" android:text="6" />
+        <Button android:id="@+id/btnMinus" android:text="-" />
+
+        <!-- Четвёртая строка -->
+        <Button android:id="@+id/btn1" android:text="1" />
+        <Button android:id="@+id/btn2" android:text="2" />
+        <Button android:id="@+id/btn3" android:text="3" />
+        <Button android:id="@+id/btnEq" android:text="=" />
+
+        <!-- Пятая строка -->
+        <Button android:id="@+id/btn0" android:text="0" android:layout_columnSpan="2"/>
+        <Button android:id="@+id/btnDot" android:text="." />
+        <View android:layout_width="0dp" android:layout_height="0dp" />
+    </GridLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+build.gratle.kts
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+}
+
+android {
+    namespace = "com.example.calculatorapp"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "com.example.calculatorapp"
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildFeatures {
+        viewBinding = true
+    }
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+
+dependencies {
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+}
