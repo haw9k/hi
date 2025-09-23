@@ -339,7 +339,7 @@ print("\n" + "=" * 60)
 # GOST
 # -*- coding: utf-8 -*-
 
-# Секретная таблица замен (S-блок)
+#  таблица замен (S-блок)
 BLOCK = [
     [4, 14, 5, 7, 6, 4, 13, 1],
     [10, 11, 8, 13, 12, 11, 11, 15],
@@ -361,7 +361,7 @@ BLOCK = [
 
 
 def get_ascii(char):
-    """Преобразование символа в ASCII код и затем в двоичное представление"""
+    """Преобразование символа """
     if char == ' ':
         asci_number = ord(char) - 16
         binary_number = '000' + bin(asci_number)[2:]
@@ -388,13 +388,13 @@ def step_one(R0, X):
 
 
 def step_two(R0X):
-    """Применение S-блоков (таблиц замен)"""
+    """Применение S-блоков )"""
     block_nums = []
     for i in range(len(R0X)):
         left = R0X[i][:4]  # Левые 4 бита
         right = R0X[i][4:]  # Правые 4 бита
 
-        # Используем S-блоки для замены
+      
         block_nums.append(BLOCK[int(left, 2)][7 - i * 2])
         block_nums.append(BLOCK[int(right, 2)][7 - 1 - i * 2])
 
@@ -402,19 +402,19 @@ def step_two(R0X):
 
 
 def step_three(block_nums):
-    """Циклический сдвиг на 11 бит влево"""
+    
     binary_block = ''
     for num in block_nums:
         binary_block += bin(num)[2:].zfill(4)
 
-    # Циклический сдвиг на 11 бит влево
+   
     binary_block = binary_block[11:] + binary_block[:11]
     print(f'f:  {binary_block}')
     return binary_block
 
 
 def step_four(binary_block, L0_list):
-    """XOR результата функции f с L0"""
+    """XOR"""
     f = int(binary_block, 2)
     L0 = int(''.join(L0_list), 2)
 
@@ -424,7 +424,6 @@ def step_four(binary_block, L0_list):
 
 
 def first_iter(text):
-    """Первая итерация шифрования"""
     L0 = []
     R0 = []
     X = []
@@ -444,7 +443,7 @@ def first_iter(text):
     print(f"R0: {R0}")
     print(f"X:  {X}")
 
-    # Выполняем шаги шифрования
+    #  шифрование
     R0X = step_one(R0, X)
     print(f"R0+X: {R0X}")
 
@@ -457,7 +456,7 @@ def first_iter(text):
     return R1
 
 
-# Основная программа
+
 def main():
     text = 'Ребров Арсений Михайлович'
     print(f"Исходный текст: '{text}'")
@@ -468,6 +467,6 @@ def main():
     print(f"Результат первой итерации: {result}")
 
 
-# Запуск программы
+
 if __name__ == "__main__":
     main()
