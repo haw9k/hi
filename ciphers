@@ -520,10 +520,9 @@ def numbers_to_text(numbers, alphabet):
 
 
 def numbers_to_text_encrypted(numbers, alphabet):
-    """Преобразование зашифрованных чисел в текст (с модульной арифметикой)"""
+    """Преобразование зашифрованных чисел в текст"""
     text = ""
     for num in numbers:
-        # Для зашифрованных чисел используем модуль длины алфавита
         encrypted_index = (num - 1) % len(alphabet) + 1
         if 1 <= encrypted_index <= len(alphabet):
             text += alphabet[encrypted_index - 1]
@@ -533,9 +532,7 @@ def numbers_to_text_encrypted(numbers, alphabet):
 
 
 def fast_pow_mod(a, exponent, n, operation_name):
-    """
-    Быстрое возведение в степень по модулю с выводом шагов.
-    """
+    """Быстрое возведение в степень по модулю с выводом шагов"""
     i = exponent
     p = 1
     a_k = a % n
@@ -559,35 +556,33 @@ def fast_pow_mod(a, exponent, n, operation_name):
 
 
 def manual_rsa_encrypt_decrypt():
-    """Основная функция для ручного RSA шифрования и расшифрования"""
+    """RSA по логике преподавателя:
+    d — взаимно простое с φ(n)
+    e — обратный элемент
+    Открытый ключ (e, n), закрытый ключ (d, n)
+    """
 
-    # Русский алфавит
     alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
 
-    # Ввод данных от пользователя
     print("=" * 60)
-    print("RSA ШИФРОВАНИЕ И РАСШИФРОВКА")
+    print("RSA ШИФРОВАНИЕ И РАСШИФРОВКА (по логике преподавателя)")
     print("=" * 60)
 
-    # Ввод простых чисел
     p = int(input("Введите первое простое число p: "))
     q = int(input("Введите второе простое число q: "))
-
-    # Ввод текста для шифрования
     plaintext = input("Введите текст для шифрования (русские буквы): ").upper()
 
-    # --- Расчет параметров RSA ---
     n = p * q
     phi = (p - 1) * (q - 1)
 
-    # Выбор открытой экспоненты e
+    # d — взаимно простое с φ(n)
     for i in range(2, phi):
         if gcd(i, phi) == 1:
-            e = i
+            d = i
             break
 
-    # Нахождение закрытой экспоненты d
-    d = modinv(e, phi)
+    # e — обратный элемент к d по модулю φ(n)
+    e = modinv(d, phi)
 
     print(f"\n--- ПАРАМЕТРЫ RSA ---")
     print(f"p = {p}, q = {q}")
@@ -596,7 +591,6 @@ def manual_rsa_encrypt_decrypt():
     print(f"Закрытый ключ (d, n) = ({d}, {n})")
     print(f"Алфавит ({len(alphabet)} букв): {alphabet}")
 
-    # Преобразование текста в числа
     plain_numbers = text_to_numbers(plaintext, alphabet)
     print(f"\n--- ПРЕОБРАЗОВАНИЕ ТЕКСТА ---")
     print(f"Оригинальный текст: '{plaintext}'")
@@ -613,7 +607,6 @@ def manual_rsa_encrypt_decrypt():
         c = fast_pow_mod(m, e, n, "Шифрование")
         encrypted_message.append(c)
 
-    # Преобразование зашифрованных чисел обратно в текст
     encrypted_text = numbers_to_text_encrypted(encrypted_message, alphabet)
     print(f"Зашифрованное сообщение в числах: {encrypted_message}")
     print(f"Зашифрованное сообщение в тексте: '{encrypted_text}'")
@@ -629,10 +622,8 @@ def manual_rsa_encrypt_decrypt():
         m = fast_pow_mod(c, d, n, "Расшифровка")
         decrypted_message.append(m)
 
-    # Преобразование чисел обратно в текст
     decrypted_text = numbers_to_text(decrypted_message, alphabet)
 
-    # --- РЕЗУЛЬТАТЫ ---
     print("\n" + "=" * 60)
     print("ИТОГОВЫЕ РЕЗУЛЬТАТЫ")
     print("=" * 60)
@@ -641,181 +632,6 @@ def manual_rsa_encrypt_decrypt():
     print(f"Расшифрованный текст: '{decrypted_text}'")
 
 
-# Запуск программы
-if __name__ == "__main__":
-    manual_rsa_encrypt_decrypt()
-
-import math
-
-
-def gcd(a, b):
-    """Наибольший общий делитель"""
-    while b != 0:
-        a, b = b, a % b
-    return a
-
-
-def modinv(a, m):
-    """Нахождение обратного элемента по модулю"""
-    m0, x0, x1 = m, 0, 1
-    while a > 1:
-        q = a // m
-        a, m = m, a % m
-        x0, x1 = x1 - q * x0, x0
-    if x1 < 0:
-        x1 += m0
-    return x1
-
-
-def text_to_numbers(text, alphabet):
-    """Преобразование текста в числа по позиции в алфавите"""
-    numbers = []
-    for char in text:
-        if char in alphabet:
-            numbers.append(alphabet.index(char) + 1)
-        else:
-            numbers.append(0)
-    return numbers
-
-
-def numbers_to_text(numbers, alphabet):
-    """Преобразование чисел обратно в текст"""
-    text = ""
-    for num in numbers:
-        if 1 <= num <= len(alphabet):
-            text += alphabet[num - 1]
-        else:
-            text += "?"
-    return text
-
-
-def numbers_to_text_encrypted(numbers, alphabet):
-    """Преобразование зашифрованных чисел в текст (с модульной арифметикой)"""
-    text = ""
-    for num in numbers:
-        # Для зашифрованных чисел используем модуль длины алфавита
-        encrypted_index = (num - 1) % len(alphabet) + 1
-        if 1 <= encrypted_index <= len(alphabet):
-            text += alphabet[encrypted_index - 1]
-        else:
-            text += "?"
-    return text
-
-
-def fast_pow_mod(a, exponent, n, operation_name):
-    """
-    Быстрое возведение в степень по модулю с выводом шагов.
-    """
-    i = exponent
-    p = 1
-    a_k = a % n
-    step = 1
-
-    print(f"{operation_name} числа {a}:")
-    print(f"{'k':>2} | {'a_k':>5} | {'i':>5} | {'s':>3} | {'p':>5}")
-    print("-" * 30)
-
-    while i > 0:
-        s = i % 2
-        if s == 1:
-            p = (p * a_k) % n
-        print(f"{step:>2} | {a_k:>5} | {i:>5} | {s:>3} | {p:>5}")
-        a_k = (a_k * a_k) % n
-        i = i // 2
-        step += 1
-
-    print(f"Итоговый результат: {p} ({a}^{exponent} mod {n})\n")
-    return p
-
-
-def manual_rsa_encrypt_decrypt():
-    """Основная функция для ручного RSA шифрования и расшифрования"""
-
-    # Русский алфавит
-    alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
-
-    # Ввод данных от пользователя
-    print("=" * 60)
-    print("RSA ШИФРОВАНИЕ И РАСШИФРОВКА")
-    print("=" * 60)
-
-    # Ввод простых чисел
-    p = int(input("Введите первое простое число p: "))
-    q = int(input("Введите второе простое число q: "))
-
-    # Ввод текста для шифрования
-    plaintext = input("Введите текст для шифрования (русские буквы): ").upper()
-
-    # --- Расчет параметров RSA ---
-    n = p * q
-    phi = (p - 1) * (q - 1)
-
-    # Выбор открытой экспоненты e
-    for i in range(2, phi):
-        if gcd(i, phi) == 1:
-            e = i
-            break
-
-    # Нахождение закрытой экспоненты d
-    d = modinv(e, phi)
-
-    # МЕНЯЕМ МЕСТАМИ e и d ДЛЯ ВЫЧИСЛЕНИЙ
-    open_key = d  # 77 - открытый ключ
-    secret_key = e  # 5 - закрытый ключ
-
-    print(f"\n--- ПАРАМЕТРЫ RSA ---")
-    print(f"p = {p}, q = {q}")
-    print(f"n = {n}, φ(n) = {phi}")
-    print(f"Открытый ключ (e, n) = ({open_key}, {n})")  # (77,221)
-    print(f"Закрытый ключ (d, n) = ({secret_key}, {n})")  # (5,221)
-    print(f"Алфавит ({len(alphabet)} букв): {alphabet}")
-
-    # Преобразование текста в числа
-    plain_numbers = text_to_numbers(plaintext, alphabet)
-    print(f"\n--- ПРЕОБРАЗОВАНИЕ ТЕКСТА ---")
-    print(f"Оригинальный текст: '{plaintext}'")
-    print(f"Числовое представление: {plain_numbers}")
-
-    # --- ШИФРОВАНИЕ (используем ОТКРЫТЫЙ ключ 77) ---
-    print("\n" + "=" * 50)
-    print(f"RSA ШИФРОВАНИЕ (используем e = {open_key})")  # 77
-    print("=" * 50)
-
-    encrypted_message = []
-    for idx, m in enumerate(plain_numbers):
-        print(f"Шифрование символа {idx + 1} ('{plaintext[idx]}' = {m}):")
-        c = fast_pow_mod(m, open_key, n, "Шифрование")  # Используем 77
-        encrypted_message.append(c)
-
-    # Преобразование зашифрованных чисел обратно в текст
-    encrypted_text = numbers_to_text_encrypted(encrypted_message, alphabet)
-    print(f"Зашифрованное сообщение в числах: {encrypted_message}")
-    print(f"Зашифрованное сообщение в тексте: '{encrypted_text}'")
-
-    # --- РАСШИФРОВКА (используем ЗАКРЫТЫЙ ключ 5) ---
-    print("\n" + "=" * 50)
-    print(f"RSA РАСШИФРОВКА (используем d = {secret_key})")  # 5
-    print("=" * 50)
-
-    decrypted_message = []
-    for idx, c in enumerate(encrypted_message):
-        print(f"Расшифровка символа {idx + 1} (число {c}):")
-        m = fast_pow_mod(c, secret_key, n, "Расшифровка")  # Используем 5
-        decrypted_message.append(m)
-
-    # Преобразование чисел обратно в текст
-    decrypted_text = numbers_to_text(decrypted_message, alphabet)
-
-    # --- РЕЗУЛЬТАТЫ ---
-    print("\n" + "=" * 60)
-    print("ИТОГОВЫЕ РЕЗУЛЬТАТЫ")
-    print("=" * 60)
-    print(f"Оригинальный текст: '{plaintext}'")
-    print(f"Зашифрованный текст: '{encrypted_text}'")
-    print(f"Расшифрованный текст: '{decrypted_text}'")
-
-
-# Запуск программы
 if __name__ == "__main__":
     manual_rsa_encrypt_decrypt()
 
