@@ -457,7 +457,7 @@ def fast_pow_mod(a, exponent, n, operation_name):
 
 
 def manual_rsa_encrypt_decrypt():
-    """RSA по логике преподавателя:
+    """
     d — взаимно простое с φ(n)
     e — обратный элемент
     Открытый ключ (e, n), закрытый ключ (d, n)
