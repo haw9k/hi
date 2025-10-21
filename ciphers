@@ -726,3 +726,165 @@ def manual_rsa_encrypt_decrypt():
 if __name__ == "__main__":
     manual_rsa_encrypt_decrypt()
 
+#rsa hash
+
+import math
+import random
+
+
+def gcd(a, b):
+    """Наибольший общий делитель"""
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+
+def modinv(a, m):
+    """Нахождение обратного элемента по модулю"""
+    m0, x0, x1 = m, 0, 1
+    while a > 1:
+        q = a // m
+        a, m = m, a % m
+        x0, x1 = x1 - q * x0, x0
+    if x1 < 0:
+        x1 += m0
+    return x1
+
+
+def text_to_numbers(text, alphabet):
+    """Преобразование текста в числа по позиции в алфавите"""
+    numbers = []
+    for char in text:
+        if char in alphabet:
+            numbers.append(alphabet.index(char) + 1)
+        else:
+            numbers.append(0)
+    return numbers
+
+
+def create_single_hash(word, n):
+    """Создание ОДНОГО хеша для всего сообщения"""
+    r = random.randint(0, 999)  # H0 - случайное начальное значение
+    hash_value = r
+
+    print(f"Создание хеша для сообщения {word}:")
+    print(f"Начальное значение H0 = {r}")
+
+    for i in range(len(word)):
+        old_hash = hash_value
+        hash_value = ((hash_value + word[i]) * (hash_value + word[i])) % n
+        print(f"Шаг {i + 1}: H_{i} = {old_hash}, +{word[i]} -> ({old_hash} + {word[i]})² mod {n} = {hash_value}")
+
+    print(f"ФИНАЛЬНЫЙ ХЕШ (представление сообщения): {hash_value}\n")
+    return hash_value
+
+
+def fast_pow_mod(a, exponent, n, operation_name):
+    """Быстрое возведение в степень по модулю с выводом шагов"""
+    i = exponent
+    p = 1
+    a_k = a % n
+    step = 1
+
+    print(f"{operation_name} числа {a}:")
+    print(f"{'k':>2} | {'a_k':>5} | {'i':>5} | {'s':>3} | {'p':>5}")
+    print("-" * 30)
+
+    while i > 0:
+        s = i % 2
+        if s == 1:
+            p = (p * a_k) % n
+        print(f"{step:>2} | {a_k:>5} | {i:>5} | {s:>3} | {p:>5}")
+        a_k = (a_k * a_k) % n
+        i = i // 2
+        step += 1
+
+    print(f"Итоговый результат: {p} ({a}^{exponent} mod {n})\n")
+    return p
+
+
+def manual_rsa_with_single_hash():
+    """RSA с использованием ОДНОГО хеша как представления сообщения"""
+
+    alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+
+    print("=" * 60)
+    print("ПРЕДСТАВЛЕНИЕ СООБЩЕНИЯ В ВИДЕ ЕДИНОГО ХЕША")
+    print("=" * 60)
+
+    p = int(input("Введите первое простое число p: "))
+    q = int(input("Введите второе простое число q: "))
+    plaintext = input("Введите текст для шифрования (русские буквы): ").upper()
+
+    n = p * q
+    phi = (p - 1) * (q - 1)
+
+    # d — взаимно простое с φ(n)
+    for i in range(2, phi):
+        if gcd(i, phi) == 1:
+            d = i
+            break
+
+    # e — обратный элемент к d по модулю φ(n)
+    e = modinv(d, phi)
+
+    print(f"\n--- ПАРАМЕТРЫ ---")
+    print(f"p = {p}, q = {q}")
+    print(f"n = {n}, φ(n) = {phi}")
+    print(f"Открытый ключ (e, n) = ({e}, {n})")
+    print(f"Закрытый ключ (d, n) = ({d}, {n})")
+    print(f"Алфавит ({len(alphabet)} букв): {alphabet}")
+
+    plain_numbers = text_to_numbers(plaintext, alphabet)
+    print(f"\n--- ПРЕОБРАЗОВАНИЕ ТЕКСТА ---")
+    print(f"Оригинальный текст: '{plaintext}'")
+    print(f"Числовое представление: {plain_numbers}")
+
+    # --- СОЗДАНИЕ ЕДИНОГО ХЕША ---
+    print("\n" + "=" * 50)
+    print("СОЗДАНИЕ ЕДИНОГО ХЕША ДЛЯ ВСЕГО СООБЩЕНИЯ")
+    print("=" * 50)
+
+    message_hash = create_single_hash(plain_numbers, n)
+    print(f"Сообщение представлено как один хеш: {message_hash}")
+
+    # --- ШИФРОВАНИЕ ХЕША ---
+    print("\n" + "=" * 50)
+    print(f"ШИФРОВАНИЕ ХЕША (используем e = {e})")
+    print("=" * 50)
+
+    encrypted_hash = fast_pow_mod(message_hash, e, n, "Шифрование хеша")
+    print(f"Зашифрованный хеш: {encrypted_hash}")
+
+    # --- РАСШИФРОВКА ХЕША ---
+    print("\n" + "=" * 50)
+    print(f"РАСШИФРОВКА ХЕША (используем d = {d})")
+    print("=" * 50)
+
+    decrypted_hash = fast_pow_mod(encrypted_hash, d, n, "Расшифровка хеша")
+    print(f"Расшифрованный хеш: {decrypted_hash}")
+
+    # --- ПРОВЕРКА ---
+    print("\n" + "=" * 50)
+    print("ПРОВЕРКА ЦЕЛОСТНОСТИ")
+    print("=" * 50)
+
+    print(f"Оригинальный хеш: {message_hash}")
+    print(f"Расшифрованный хеш: {decrypted_hash}")
+
+    if message_hash == decrypted_hash:
+        print("✓ Хеши совпадают! Сообщение передано корректно.")
+    else:
+        print("✗ Хеши не совпадают! Ошибка при передаче.")
+
+    print("\n" + "=" * 60)
+    print("ИТОГОВЫЕ РЕЗУЛЬТАТЫ")
+    print("=" * 60)
+    print(f"Оригинальный текст: '{plaintext}'")
+    print(f"Исходные числа: {plain_numbers}")
+    print(f"Единый хеш: {message_hash}")
+    print(f"Зашифрованный хеш: {encrypted_hash}")
+
+
+if __name__ == "__main__":
+    manual_rsa_with_single_hash()
