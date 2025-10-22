@@ -773,7 +773,7 @@ def create_single_hash(word, n):
     for i in range(len(word)):
         old_hash = hash_value
         hash_value = ((hash_value + word[i]) * (hash_value + word[i])) % n
-        print(f"Шаг {i + 1}: H_{i} = {old_hash}, +{word[i]} -> ({old_hash} + {word[i]})² mod {n} = {hash_value}")
+        print(f"H {i + 1}: H_{i} = {old_hash}, +{word[i]} -> ({old_hash} + {word[i]})² mod {n} = {hash_value}")
 
     print(f"ФИНАЛЬНЫЙ ХЕШ (представление сообщения): {hash_value}\n")
     return hash_value
@@ -853,7 +853,7 @@ def manual_rsa_with_single_hash():
     print(f"ШИФРОВАНИЕ ХЕША (используем e = {e})")
     print("=" * 50)
 
-    encrypted_hash = fast_pow_mod(message_hash, e, n, "Шифрование хеша")
+    encrypted_hash = fast_pow_mod(message_hash, d, n, "Шифрование хеша")
     print(f"Зашифрованный хеш: {encrypted_hash}")
 
     # --- РАСШИФРОВКА ХЕША ---
@@ -861,7 +861,7 @@ def manual_rsa_with_single_hash():
     print(f"РАСШИФРОВКА ХЕША (используем d = {d})")
     print("=" * 50)
 
-    decrypted_hash = fast_pow_mod(encrypted_hash, d, n, "Расшифровка хеша")
+    decrypted_hash = fast_pow_mod(encrypted_hash, e, n, "Расшифровка хеша")
     print(f"Расшифрованный хеш: {decrypted_hash}")
 
     # --- ПРОВЕРКА ---
