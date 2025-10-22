@@ -726,8 +726,6 @@ def manual_rsa_encrypt_decrypt():
 if __name__ == "__main__":
     manual_rsa_encrypt_decrypt()
 
-#rsa hash
-
 import math
 import random
 
@@ -885,6 +883,9 @@ def manual_rsa_with_single_hash():
     print(f"Единый хеш: {message_hash}")
     print(f"Зашифрованный хеш: {encrypted_hash}")
 
+
+if __name__ == "__main__":
+    manual_rsa_with_single_hash()
 
 if __name__ == "__main__":
     manual_rsa_with_single_hash()
