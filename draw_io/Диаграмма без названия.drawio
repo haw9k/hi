@@ -613,9 +613,6 @@
             <mxPoint x="150" y="2230" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="wYBXU3IiWUfxRMb08dt5-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#09555B;fontColor=#1A1A1A;" edge="1" parent="1" source="zMBURMLgjqiMnKHPd4lG-1" target="zMBURMLgjqiMnKHPd4lG-1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
