@@ -1,0 +1,154 @@
+import random
+import math
+
+
+def fast_pow_mod(a, exponent, n, operation_name=""):
+    """Быстрое возведение в степень по модулю с выводом шагов"""
+    i = exponent
+    p = 1
+    a_k = a % n
+    step = 1
+
+    print(f"\n{operation_name} числа {a}:")
+    print(f"{'k':>2} | {'a_k':>10} | {'i':>10} | {'s':>3} | {'p':>10}")
+    print("-" * 45)
+
+    while i > 0:
+        s = i % 2
+        if s == 1:
+            p = (p * a_k) % n
+        print(f"{step:>2} | {a_k:>10} | {i:>10} | {s:>3} | {p:>10}")
+        a_k = (a_k * a_k) % n
+        i = i // 2
+        step += 1
+
+    print(f"Итоговый результат: {p} ({a}^{exponent} mod {n})\n")
+    return p
+
+
+class PrimeGenerator:
+    def __init__(self):
+        # Список малых простых чисел для предварительной проверки
+        self.small_primes = self._generate_small_primes(2000)
+
+    def _generate_small_primes(self, limit):
+        """Генерирует список простых чисел до заданного предела"""
+        sieve = [True] * (limit + 1)
+        sieve[0] = sieve[1] = False
+
+        for i in range(2, int(math.sqrt(limit)) + 1):
+            if sieve[i]:
+                for j in range(i * i, limit + 1, i):
+                    sieve[j] = False
+
+        return [i for i, is_prime in enumerate(sieve) if is_prime]
+
+    def rabin_miller_test(self, p, k=5, show_steps=False):
+        """
+        Тест Рабина–Миллера на простоту
+        p - проверяемое число
+        k - количество итераций (свидетелей)
+        """
+        if p == 2 or p == 3:
+            return True
+        if p <= 1 or p % 2 == 0:
+            return False
+
+        # Разложение p-1 = 2^b * m
+        b = 0
+        m = p - 1
+        while m % 2 == 0:
+            m //= 2
+            b += 1
+
+        for _ in range(k):
+            a = random.randint(2, p - 2)
+            if show_steps:
+                print(f"\n=== Проверка свидетеля a = {a} ===")
+                z = fast_pow_mod(a, m, p, f"Вычисление a^m mod p (a={a})")
+            else:
+                z = pow(a, m, p)
+
+            if z == 1 or z == p - 1:
+                continue
+
+            j = 0
+            while j < b - 1:
+                if show_steps:
+                    z = fast_pow_mod(z, 2, p, f"Возведение в квадрат (шаг {j + 1})")
+                else:
+                    z = pow(z, 2, p)
+
+                if z == p - 1:
+                    break
+                if z == 1:
+                    return False
+                j += 1
+            else:
+                if z != p - 1:
+                    return False
+        return True
+
+    def is_divisible_by_small_primes(self, n):
+        """Проверяет делимость на малые простые числа"""
+        for prime in self.small_primes:
+            if prime >= n:
+                break
+            if n % prime == 0:
+                return True
+        return False
+
+    def generate_prime(self, bits):
+        """Генерирует простое число заданной битовой длины"""
+        while True:
+            # Генерация случайного числа заданной длины
+            p = random.getrandbits(bits)
+
+            # Устанавливаем старший и младший биты
+            p |= (1 << (bits - 1))  # старший бит = 1
+            p |= 1  # младший бит = 1 (нечётность)
+
+            if p.bit_length() != bits:
+                continue
+
+            # Проверка на делимость малыми простыми
+            if self.is_divisible_by_small_primes(p):
+                continue
+
+            # Тест Рабина–Миллера
+            if self.rabin_miller_test(p, k=5):
+                return p
+
+    def generate_prime_sequential(self, start_num, bits):
+        """Генерация простого числа последовательным перебором"""
+        if start_num % 2 == 0:
+            start_num += 1
+
+        p = start_num
+        while True:
+            if p.bit_length() > bits:
+                p = (1 << (bits - 1)) | 1  # перезапуск
+
+            if not self.is_divisible_by_small_primes(p):
+                if self.rabin_miller_test(p, k=5):
+                    return p
+            p += 2
+
+
+# === Пример использования ===
+if __name__ == "__main__":
+    generator = PrimeGenerator()
+
+    # Тест 1: тест Рабина-Миллера с пошаговым выводом для маленького числа
+    n = 651  # составное число (Кармайкл)
+    print(f"\nТест Рабина–Миллера для числа {n}:")
+    is_prime = generator.rabin_miller_test(n, k=3, show_steps=True)
+    print(f"Результат: {'Простое' if is_prime else 'Составное'}")
+
+    # Тест 2: генерация 64-битного простого числа
+    print("\nГенерация 64-битного простого числа...")
+    prime = generator.generate_prime(64)
+    print(f"Сгенерировано простое число: {prime}")
+    print(f"Битовая длина: {prime.bit_length()}")
+    print(f"Проверка: {generator.rabin_miller_test(prime, 10)}")
+а ты можешь сделать код проще, функцию фаст пов не трогай
