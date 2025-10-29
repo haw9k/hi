@@ -1,70 +1,23 @@
-import math
 import random
+import math
 
 
-def gcd(a, b):
-    """Наибольший общий делитель"""
-    while b != 0:
-        a, b = b, a % b
-    return a
-
-
-def modinv(a, m):
-    """Нахождение обратного элемента по модулю"""
-    m0, x0, x1 = m, 0, 1
-    while a > 1:
-        q = a // m
-        a, m = m, a % m
-        x0, x1 = x1 - q * x0, x0
-    if x1 < 0:
-        x1 += m0
-    return x1
-
-
-def text_to_numbers(text, alphabet):
-    """Преобразование текста в числа по позиции в алфавите"""
-    numbers = []
-    for char in text:
-        if char in alphabet:
-            numbers.append(alphabet.index(char) + 1)
-        else:
-            numbers.append(0)
-    return numbers
-
-
-def create_single_hash(word, n):
-    """Создание ОДНОГО хеша для всего сообщения"""
-    r = 124  # H0 - случайное начальное значение
-    hash_value = r
-
-    print(f"Создание хеша для сообщения {word}:")
-    print(f"Начальное значение H0 = {r}")
-
-    for i in range(len(word)):
-        old_hash = hash_value
-        hash_value = ((hash_value + word[i]) * (hash_value + word[i])) % n
-        print(f"H {i + 1}: H_{i} = {old_hash}, +{word[i]} -> ({old_hash} + {word[i]})² mod {n} = {hash_value}")
-
-    print(f"ФИНАЛЬНЫЙ ХЕШ (представление сообщения): {hash_value}\n")
-    return hash_value
-
-
-def fast_pow_mod(a, exponent, n, operation_name):
+def fast_pow_mod(a, exponent, n, operation_name=""):
     """Быстрое возведение в степень по модулю с выводом шагов"""
     i = exponent
     p = 1
     a_k = a % n
     step = 1
 
-    print(f"{operation_name} числа {a}:")
-    print(f"{'k':>2} | {'a_k':>5} | {'i':>5} | {'s':>3} | {'p':>5}")
-    print("-" * 30)
+    print(f"\n{operation_name} числа {a}:")
+    print(f"{'k':>2} | {'a_k':>10} | {'i':>10} | {'s':>3} | {'p':>10}")
+    print("-" * 45)
 
     while i > 0:
         s = i % 2
         if s == 1:
             p = (p * a_k) % n
-        print(f"{step:>2} | {a_k:>5} | {i:>5} | {s:>3} | {p:>5}")
+        print(f"{step:>2} | {a_k:>10} | {i:>10} | {s:>3} | {p:>10}")
         a_k = (a_k * a_k) % n
         i = i // 2
         step += 1
@@ -73,88 +26,103 @@ def fast_pow_mod(a, exponent, n, operation_name):
     return p
 
 
-def manual_rsa_with_single_hash():
-    """RSA с использованием ОДНОГО хеша как представления сообщения"""
+class PrimeGenerator:
+    def __init__(self):
 
-    alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+        self.small_primes = self._generate_small_primes(200)
 
-    print("=" * 60)
-    print("ПРЕДСТАВЛЕНИЕ СООБЩЕНИЯ В ВИДЕ ЕДИНОГО ХЕША")
-    print("=" * 60)
+    def _generate_small_primes(self, limit):
+        """Генерирует список простых чисел до заданного предела"""
+        sieve = [True] * (limit + 1)
+        sieve[0] = sieve[1] = False
 
-    p = int(input("Введите первое простое число p: "))
-    q = int(input("Введите второе простое число q: "))
-    plaintext = input("Введите текст для шифрования (русские буквы): ").upper()
+        for i in range(2, int(math.sqrt(limit)) + 1):
+            if sieve[i]:
+                for j in range(i * i, limit + 1, i):
+                    sieve[j] = False
 
-    n = p * q
-    phi = (p - 1) * (q - 1)
+        return [i for i, is_prime in enumerate(sieve) if is_prime]
 
-    # d — взаимно простое с φ(n)
-    for i in range(2, phi):
-        if gcd(i, phi) == 1:
-            d = i
-            break
+    def rabin_miller_test(self, p, k=5, show_steps=False):
 
-    # e — обратный элемент к d по модулю φ(n)
-    e = modinv(d, phi)
 
-    print(f"\n--- ПАРАМЕТРЫ ---")
-    print(f"p = {p}, q = {q}")
-    print(f"n = {n}, φ(n) = {phi}")
-    print(f"Открытый ключ (e, n) = ({e}, {n})")
-    print(f"Закрытый ключ (d, n) = ({d}, {n})")
-    print(f"Алфавит ({len(alphabet)} букв): {alphabet}")
 
-    plain_numbers = text_to_numbers(plaintext, alphabet)
-    print(f"\n--- ПРЕОБРАЗОВАНИЕ ТЕКСТА ---")
-    print(f"Оригинальный текст: '{plaintext}'")
-    print(f"Числовое представление: {plain_numbers}")
+        # Разложение p-1 = 2^b * m
+        b = 0
+        m = p - 1
+        while m % 2 == 0:
+            m //= 2
+            b += 1
 
-    # --- СОЗДАНИЕ ЕДИНОГО ХЕША ---
-    print("\n" + "=" * 50)
-    print("СОЗДАНИЕ ЕДИНОГО ХЕША ДЛЯ ВСЕГО СООБЩЕНИЯ")
-    print("=" * 50)
+        for _ in range(k):
+            a = random.randint(2, p - 2)
+            if show_steps:
+                print(f"\n=== Проверка свидетеля a = {a} ===")
+                z = fast_pow_mod(a, m, p, f"Вычисление a^m mod p (a={a})")
+            else:
+                z = pow(a, m, p)
 
-    message_hash = create_single_hash(plain_numbers, n)
-    print(f"Сообщение представлено как один хеш: {message_hash}")
+            if z == 1 or z == p - 1:
+                continue
 
-    # --- ШИФРОВАНИЕ ХЕША ---
-    print("\n" + "=" * 50)
-    print(f"ШИФРОВАНИЕ ХЕША (используем e = {e})")
-    print("=" * 50)
+            j = 0
+            while j < b :
+                if show_steps:
+                    z = fast_pow_mod(z, 2, p, f"Возведение в квадрат (шаг {j + 1})")
+                else:
+                    z = pow(z, 2, p)
 
-    encrypted_hash = fast_pow_mod(message_hash, d, n, "Шифрование хеша")
-    print(f"S=: {encrypted_hash}")
+                if z == p - 1:
+                    break
+                if z == 1:
+                    return False
+                j += 1
+            else:
+                if z != p - 1:
+                    return False
+        return True
 
-    # --- РАСШИФРОВКА ХЕША ---
-    print("\n" + "=" * 50)
-    print(f"РАСШИФРОВКА ХЕША (используем d = {d})")
-    print("=" * 50)
+    def is_divisible_by_small_primes(self, n):
+        """Проверяет делимость на малые простые числа"""
+        for prime in self.small_primes:
+            if prime >= n:
+                break
+            if n % prime == 0:
+                return True
+        return False
 
-    decrypted_hash = fast_pow_mod(encrypted_hash, e, n, "Расшифровка хеша")
-    print(f"r=: {decrypted_hash}")
+    def generate_prime(self, bits):
+        """Генерирует простое число заданной битовой длины"""
+        while True:
+            # Генерация случайного числа заданной длины
+            p = random.getrandbits(bits)
 
-    # --- ПРОВЕРКА ---
-    print("\n" + "=" * 50)
-    print("ПРОВЕРКА ЦЕЛОСТНОСТИ")
-    print("=" * 50)
+            # Устанавливаем старший и младший биты
+            p |= (1 << (bits - 1))  # старший бит = 1
+            p |= 1  # младший бит = 1 (нечётность)
 
-    print(f"Оригинальный хеш: {message_hash}")
-    print(f"Расшифрованный хеш: {decrypted_hash}")
+            if p.bit_length() != bits:
+                continue
 
-    if message_hash == decrypted_hash:
-        print(" Хеши совпадают! Сообщение передано корректно.")
-    else:
-        print(" Хеши не совпадают! Ошибка при передаче.")
+            # Проверка на делимость малыми простыми
+            if self.is_divisible_by_small_primes(p):
+                continue
 
-    print("\n" + "=" * 60)
-    print("ИТОГОВЫЕ РЕЗУЛЬТАТЫ")
-    print("=" * 60)
-    print(f"Оригинальный текст: '{plaintext}'")
-    print(f"Исходные числа: {plain_numbers}")
-    print(f"Единый хеш: {message_hash}")
-    print(f" подпись: {encrypted_hash}")
+            # Тест Рабина–Миллера
+            if self.rabin_miller_test(p, k=5):
+                return p
+
+
 
 
 if __name__ == "__main__":
-    manual_rsa_with_single_hash()
+    generator = PrimeGenerator()
+
+
+
+    # Тест 2
+    print("\nГенерация 21-битного простого числа: ")
+    prime = generator.generate_prime(21)
+    print(f"Сгенерировано простое число: {prime}")
+    print(f"Битовая длина: {prime.bit_length()}")
+    print(f"Проверка: {generator.rabin_miller_test(prime, 5,show_steps=True)}")
