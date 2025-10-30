@@ -1,128 +1,65 @@
-import random
-import math
+2.26.Таблица price_restrictions-Ограничения по наценке и изменению цен, заданные ГК или директором магазина.
+Поле
+Тип данных
+Описание
+id
+UUID
+Уникальный идентификатор записи
+product_id
+UUID
+Ссылка на товар (product.id)
+min_markup_percent
+NUMERIC(5,2)
+Минимальная допустимая наценка на товар в процентах
+max_markup_percent
+NUMERIC(5,2)
+Максимальная допустимая наценка на товар в процентах
+min_price
+NUMERIC(10,2)
+Минимально допустимая цена реализации
+max_price
+NUMERIC(10,2)
+Максимально допустимая цена реализации
+created_at
+TIMESTAMP
+Дата и время установки ограничения
+
+Связи:
+
+product_id → products.id (таблица products)
+2.18. Таблица price_list_items — позиции прайс-листа
+
+Поле
+Тип данных
+Описание
+id
+UUID
+PK
+price_list_id
+UUID
+FK
+product_id
+UUID
+FK
+input_price
+NUMERIC(10,2)
+Входная цена 
+final_price
+NUMERIC(10,2)
+Итоговая цена
+price_type
+VARCHAR(20)
+Тип цены (регулярная, уценочная, акционная).
+limit_markup_percent
+NUMERIC(10,2)
+Макс. наценка (например 15%)
 
 
-def fast_pow_mod(a, exponent, n, operation_name=""):
-    """Быстрое возведение в степень по модулю с выводом шагов"""
-    i = exponent
-    p = 1
-    a_k = a % n
-    step = 1
-
-    print(f"\n{operation_name} числа {a}:")
-    print(f"{'k':>2} | {'a_k':>10} | {'i':>10} | {'s':>3} | {'p':>10}")
-    print("-" * 45)
-
-    while i > 0:
-        s = i % 2
-        if s == 1:
-            p = (p * a_k) % n
-        print(f"{step:>2} | {a_k:>10} | {i:>10} | {s:>3} | {p:>10}")
-        a_k = (a_k * a_k) % n
-        i = i // 2
-        step += 1
-
-    print(f"Итоговый результат: {p} ({a}^{exponent} mod {n})\n")
-    return p
+Связи:
+price_list_id → price_lists.id (таблица price_lists)
 
 
-class PrimeGenerator:
-    def __init__(self):
-
-        self.small_primes = self._generate_small_primes(200)
-
-    def _generate_small_primes(self, limit):
-        """Генерирует список простых чисел до заданного предела"""
-        sieve = [True] * (limit + 1)
-        sieve[0] = sieve[1] = False
-
-        for i in range(2, int(math.sqrt(limit)) + 1):
-            if sieve[i]:
-                for j in range(i * i, limit + 1, i):
-                    sieve[j] = False
-
-        return [i for i, is_prime in enumerate(sieve) if is_prime]
-
-    def rabin_miller_test(self, p, k=5, show_steps=False):
-
-
-
-        # Разложение p-1 = 2^b * m
-        b = 0
-        m = p - 1
-        while m % 2 == 0:
-            m //= 2
-            b += 1
-
-        for _ in range(k):
-            a = random.randint(2, p - 2)
-            if show_steps:
-                print(f"\n=== Проверка свидетеля a = {a} ===")
-                z = fast_pow_mod(a, m, p, f"Вычисление a^m mod p (a={a})")
-            else:
-                z = pow(a, m, p)
-
-            if z == 1 or z == p - 1:
-                continue
-
-            j = 0
-            while j < b :
-                if show_steps:
-                    z = fast_pow_mod(z, 2, p, f"Возведение в квадрат (шаг {j + 1})")
-                else:
-                    z = pow(z, 2, p)
-
-                if z == p - 1:
-                    break
-                if z == 1:
-                    return False
-                j += 1
-            else:
-                if z != p - 1:
-                    return False
-        return True
-
-    def is_divisible_by_small_primes(self, n):
-        """Проверяет делимость на малые простые числа"""
-        for prime in self.small_primes:
-            if prime >= n:
-                break
-            if n % prime == 0:
-                return True
-        return False
-
-    def generate_prime(self, bits):
-        """Генерирует простое число заданной битовой длины"""
-        while True:
-            # Генерация случайного числа заданной длины
-            p = random.getrandbits(bits)
-
-            # Устанавливаем старший и младший биты
-            p |= (1 << (bits - 1))  # старший бит = 1
-            p |= 1  # младший бит = 1 (нечётность)
-
-            if p.bit_length() != bits:
-                continue
-
-            # Проверка на делимость малыми простыми
-            if self.is_divisible_by_small_primes(p):
-                continue
-
-            # Тест Рабина–Миллера
-            if self.rabin_miller_test(p, k=5):
-                return p
+product_id → products.id (таблица products)
 
 
 
-
-if __name__ == "__main__":
-    generator = PrimeGenerator()
-
-
-
-    # Тест 2
-    print("\nГенерация 21-битного простого числа: ")
-    prime = generator.generate_prime(21)
-    print(f"Сгенерировано простое число: {prime}")
-    print(f"Битовая длина: {prime.bit_length()}")
-    print(f"Проверка: {generator.rabin_miller_test(prime, 5,show_steps=True)}")
