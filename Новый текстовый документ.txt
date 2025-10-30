@@ -62,4 +62,35 @@ price_list_id → price_lists.id (таблица price_lists)
 product_id → products.id (таблица products)
 
 
+2.17. Таблица price_lists — прайс-листы
+
+Поле
+Тип данных
+Описание
+id
+UUID
+PK
+type
+VARCHAR(20)
+Основной регулярный прайс-лист,Акционные предложения ("1+1", "2+1",”3+1”),Прайс-листы от конкретных поставщиков,Цены конкурентов для подстройки,Прайс-лист уценочных товаров,Общесетевые акции
+
+
+effective_date
+DATE
+Когда цена вступает в силу
+status
+VARCHAR(20)
+«активен», «отклонен»
+end date
+DATE
+когда истекает срок действия
+created_by
+UUID
+Кто создал
+
+Связи:
+created_by → employees.id (таблица employees)
+
+
+id ← price_list_items.price_list_id (таблица price_list_items)
 
