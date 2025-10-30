@@ -93,4 +93,44 @@ created_by → employees.id (таблица employees)
 
 
 id ← price_list_items.price_list_id (таблица price_list_items)
+2.37.Таблица product_categories-Категории товаров (например: молочные, хлеб, детское питание и т.д.)
+Поле
+Тип данных
+Описание
+id
+UUID
+Уникальный идентификатор категории
+name
+VARCHAR(100)
+Наименование категории
+parent_id
+UUID
+Ссылка на родительскую категорию (для иерархии)
+
+Связи:
+
+parent_id → product_categories.id (таблица product_categories)
+ 
+2.38.Таблица product_category_links-Связь товара с его категорией.
+Поле
+Тип данных
+Описание
+id
+UUID
+Уникальный идентификатор связи
+product_id
+UUID
+Ссылка на товар (product.id)
+category_id
+UUID
+Ссылка на категорию (product_categories.id)
+
+Связи:
+
+product_id → products.id (таблица products)
+
+
+category_id → product_categories.id (таблица product_categories)
+
+
 
