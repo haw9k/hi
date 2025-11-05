@@ -1,0 +1,902 @@
+# Шифр Цезаря
+alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+shift = 3
+text = input("Введите текст для шифрования: ")
+encrypted = ""
+
+for char in text:
+    if char.lower() in alphabet:
+        index = alphabet.index(char.lower())
+        new_index = (index + shift) % len(alphabet)
+        if char.isupper():
+            encrypted += alphabet[new_index].upper()
+        else:
+            encrypted += alphabet[new_index]
+    else:
+        encrypted += char
+
+print("Зашифрованный текст:", encrypted)
+decrypted = ""
+for char in encrypted:
+    if char.lower() in alphabet:
+        index = alphabet.index(char.lower())
+        new_index = (index - shift) % len(alphabet)
+        if char.isupper():
+            decrypted += alphabet[new_index].upper()
+        else:
+            decrypted += alphabet[new_index]
+    else:
+        decrypted += char
+
+print("Расшифрованный текст:", decrypted)
+
+# Шифр Атбаш
+alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+
+text = input("Введите текст: ")
+
+encrypted = ""
+for char in text:
+    if char.lower() in alphabet:
+        index = alphabet.index(char.lower())
+        new_index = len(alphabet) - 1 - index
+        if char.isupper():
+            encrypted += alphabet[new_index].upper()
+        else:
+            encrypted += alphabet[new_index]
+    else:
+        encrypted += char
+
+print("Зашифрованный текст:", encrypted)
+
+decrypted = ""
+for char in encrypted:
+    if char.lower() in alphabet:
+        index = alphabet.index(char.lower())
+        new_index = len(alphabet) - 1 - index
+        if char.isupper():
+            decrypted += alphabet[new_index].upper()
+        else:
+            decrypted += alphabet[new_index]
+    else:
+        decrypted += char
+
+print("Расшифрованный текст:", decrypted)
+
+
+
+
+
+
+# Шифр Маскура(перепктал шифры и случайно сделал маскура а не камасутра. камасутра ниже)
+import random
+
+alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+
+# таблица замен
+half = len(alphabet) // 2
+first_half = list(alphabet[:half])  # первая половина: а-п
+second_half = list(alphabet[half:])  # вторая половина: р-я
+
+# перемешиваем обе половины
+random.shuffle(first_half)
+random.shuffle(second_half)
+
+encrypt_dict = {}
+decrypt_dict = {}
+
+for i in range(half):
+    encrypt_dict[alphabet[i]] = first_half[i]  # а→д
+    encrypt_dict[alphabet[half + i]] = second_half[i]  # р→у
+
+    decrypt_dict[first_half[i]] = alphabet[i]  # д→а
+    decrypt_dict[second_half[i]] = alphabet[half + i]  # у→р
+
+# Вывод таблицы соответствий (ключа)
+print("=" * 50)
+print("ТАБЛИЦА СООТВЕТСТВИЙ (КЛЮЧ):")
+print("=" * 50)
+print("Исходная → Зашифрованная")
+print("-" * 30)
+
+# Выводим соответствия для первой половины
+for i in range(half):
+    print(f"{alphabet[i]:<2} → {first_half[i]:<2}")
+
+# Выводим соответствия для второй половины  
+for i in range(half):
+    print(f"{alphabet[half + i]:<2} → {second_half[i]:<2}")
+
+print("=" * 50)
+print()
+
+text = input("Введите текст для шифрования: ")
+encrypted = ""
+
+for char in text:
+    if char.lower() in alphabet:
+        if char.isupper():
+            encrypted += encrypt_dict[char.lower()].upper()
+        else:
+            encrypted += encrypt_dict[char.lower()]
+    else:
+        encrypted += char
+
+print("Зашифрованный текст:", encrypted)
+
+decrypted = ""
+for char in encrypted:
+    if char.lower() in alphabet:
+        if char.isupper():
+            decrypted += decrypt_dict[char.lower()].upper()
+        else:
+            decrypted += decrypt_dict[char.lower()]
+    else:
+        decrypted += char
+
+print("Расшифрованный текст:", decrypted)
+
+# Дополнительный вывод для удобства чтения ключа
+print("\n" + "=" * 50)
+print("КОМПАКТНЫЙ ВИД КЛЮЧА:")
+print("=" * 50)
+print("Исходный алфавит:    " + " ".join(alphabet))
+print("Зашифрованный:       " + " ".join([encrypt_dict[char] for char in alphabet]))
+print("=" * 50)
+
+
+
+
+
+
+# Шифр Камасутра
+import random
+
+alphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+print(f"Длина алфавита: {len(alphabet)}")
+
+# Делим алфавит пополам
+half = len(alphabet) // 2
+first_half = list(alphabet[:half])    # первая половина
+second_half = list(alphabet[half:])   # вторая половина
+
+# Перемешиваем обе половины
+random.shuffle(first_half)
+random.shuffle(second_half)
+
+# Создаем словарь для шифрования (буква → пара)
+encrypt_dict = {}
+for i in range(len(first_half)):
+    encrypt_dict[first_half[i]] = second_half[i]
+    encrypt_dict[second_half[i]] = first_half[i]
+
+# Вывод ключей (таблицы соответствий)
+print("=" * 60)
+print("ШИФР КАМАСУТРА - ТАБЛИЦА СООТВЕТСТВИЙ:")
+print("=" * 60)
+print("Пары букв для замены:")
+print("-" * 30)
+
+for i in range(len(first_half)):
+    print(f"{first_half[i]} ↔ {second_half[i]}")
+
+print("=" * 60)
+print()
+
+# Компактный вид ключа
+print("Компактный вид ключа:")
+print("Первая половина:  " + " ".join(first_half))
+print("Вторая половина:  " + " ".join(second_half))
+print("=" * 60)
+print()
+
+# Шифрование
+text = input("Введите текст для шифрования: ")
+encrypted = ""
+
+for char in text:
+    if char.lower() in encrypt_dict:
+        if char.isupper():
+            encrypted += encrypt_dict[char.lower()].upper()
+        else:
+            encrypted += encrypt_dict[char.lower()]
+    else:
+        encrypted += char
+
+print("Зашифрованный текст:", encrypted)
+print()
+
+# Расшифровка (тот же процесс, так как шифр симметричный)
+decrypted = ""
+for char in encrypted:
+    if char.lower() in encrypt_dict:
+        if char.isupper():
+            decrypted += encrypt_dict[char.lower()].upper()
+        else:
+            decrypted += encrypt_dict[char.lower()]
+    else:
+        decrypted += char
+
+print("Расшифрованный текст:", decrypted)
+
+# Дополнительная информация
+print("\n" + "=" * 60)
+print("ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ:")
+print("=" * 60)
+print("Полный словарь замен:")
+for i, (key, value) in enumerate(encrypt_dict.items()):
+    if i % 5 == 0:
+        print()
+    print(f"{key}→{value}", end="  ")
+print("\n" + "=" * 60)
+
+
+
+
+
+
+
+
+# GOST
+# -*- coding: utf-8 -*-
+
+#  таблица замен (S-блок)
+BLOCK = [
+    [4, 14, 5, 7, 6, 4, 13, 1],
+    [10, 11, 8, 13, 12, 11, 11, 15],
+    [9, 4, 1, 10, 7, 10, 4, 13],
+    [2, 12, 13, 1, 1, 0, 1, 0],
+    [13, 6, 10, 0, 5, 7, 3, 5],
+    [8, 13, 3, 8, 15, 2, 15, 7],
+    [0, 15, 4, 9, 13, 1, 5, 10],
+    [14, 10, 2, 15, 8, 13, 9, 4],
+    [6, 2, 14, 14, 4, 3, 0, 9],
+    [11, 3, 15, 4, 10, 6, 10, 2],
+    [1, 8, 12, 6, 9, 8, 14, 3],
+    [12, 1, 7, 12, 14, 5, 7, 14],
+    [7, 0, 6, 11, 0, 9, 6, 6],
+    [15, 7, 0, 2, 3, 12, 8, 11],
+    [5, 5, 9, 5, 11, 15, 2, 8],
+    [3, 9, 11, 3, 2, 14, 12, 12],
+]
+
+
+def get_ascii(char):
+    """Преобразование символа """
+    if char == ' ':
+        asci_number = ord(char) - 16
+        binary_number = '000' + bin(asci_number)[2:]
+    else:
+        asci_number = ord(char) - 848
+        binary_number = bin(asci_number)[2:]
+    return binary_number
+
+
+def step_one(R0, X):
+    """Сложение R0 и X по модулю 2^32"""
+    str_R0 = ''.join(R0)
+    str_X = ''.join(X)
+
+    int_R0 = int(str_R0, 2)
+    int_X = int(str_X, 2)
+    int_R0_plus_X = int_R0 + int_X
+
+    # Берем младшие 32 бита (mod 2^32)
+    R0X = bin(int_R0_plus_X)[2:].zfill(32)[-32:]
+
+    # Разделяем на 4 байта
+    return [R0X[i * 8:(i + 1) * 8] for i in range(4)]
+
+
+def step_two(R0X):
+    """Применение S-блоков )"""
+    block_nums = []
+    for i in range(len(R0X)):
+        left = R0X[i][:4]  # Левые 4 бита
+        right = R0X[i][4:]  # Правые 4 бита
+
+      
+        block_nums.append(BLOCK[int(left, 2)][7 - i * 2])
+        block_nums.append(BLOCK[int(right, 2)][7 - 1 - i * 2])
+
+    return block_nums
+
+
+def step_three(block_nums):
+    
+    binary_block = ''
+    for num in block_nums:
+        binary_block += bin(num)[2:].zfill(4)
+
+   
+    binary_block = binary_block[11:] + binary_block[:11]
+    print(f'f:  {binary_block}')
+    return binary_block
+
+
+def step_four(binary_block, L0_list):
+    """XOR"""
+    f = int(binary_block, 2)
+    L0 = int(''.join(L0_list), 2)
+
+    R1 = bin(f ^ L0)[2:]
+    print(f'R1: {R1}')
+    return R1
+
+
+def first_iter(text):
+    L0 = []
+    R0 = []
+    X = []
+
+    # Разделяем текст на блоки
+    for i in range(min(12, len(text))):
+        binary_number = get_ascii(text[i])
+
+        if i < 4:
+            L0.append(binary_number)
+        elif i < 8:
+            R0.append(binary_number)
+        else:
+            X.append(binary_number)
+
+    print(f"L0: {L0}")
+    print(f"R0: {R0}")
+    print(f"X:  {X}")
+
+    #  шифрование
+    R0X = step_one(R0, X)
+    print(f"R0+X: {R0X}")
+
+    block_nums = step_two(R0X)
+    print(f"После S-блоков: {block_nums}")
+
+    binary_block = step_three(block_nums)
+    R1 = step_four(binary_block, L0)
+
+    return R1
+
+
+
+def main():
+    text = 'РЕБРОВ АРСЕНИЙ МИХАЙЛОВИЧ'
+    print(f"Исходный текст: '{text}'")
+    print("=" * 50)
+
+    result = first_iter(text)
+    print("=" * 50)
+    print(f"Результат первой итерации: {result}")
+
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+#---------------------------------------------RSA------------------------------------------------
+import math
+
+
+def gcd(a, b):
+    """Наибольший общий делитель"""
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+
+def modinv(a, m):
+    """Нахождение обратного элемента по модулю"""
+    m0, x0, x1 = m, 0, 1
+    while a > 1:
+        q = a // m
+        a, m = m, a % m
+        x0, x1 = x1 - q * x0, x0
+    if x1 < 0:
+        x1 += m0
+    return x1
+
+
+def text_to_numbers(text, alphabet):
+    """Преобразование текста в числа по позиции в алфавите"""
+    numbers = []
+    for char in text:
+        if char in alphabet:
+            numbers.append(alphabet.index(char) + 1)
+        else:
+            numbers.append(0)
+    return numbers
+
+
+def numbers_to_text(numbers, alphabet):
+    """Преобразование чисел обратно в текст"""
+    text = ""
+    for num in numbers:
+        if 1 <= num <= len(alphabet):
+            text += alphabet[num - 1]
+        else:
+            text += "?"
+    return text
+
+
+def numbers_to_text_encrypted(numbers, alphabet):
+    """Преобразование зашифрованных чисел в текст"""
+    text = ""
+    for num in numbers:
+        encrypted_index = (num - 1) % len(alphabet) + 1
+        if 1 <= encrypted_index <= len(alphabet):
+            text += alphabet[encrypted_index - 1]
+        else:
+            text += "?"
+    return text
+
+
+def fast_pow_mod(a, exponent, n, operation_name):
+    """Быстрое возведение в степень по модулю с выводом шагов"""
+    i = exponent
+    p = 1
+    a_k = a % n
+    step = 1
+
+    print(f"{operation_name} числа {a}:")
+    print(f"{'k':>2} | {'a_k':>5} | {'i':>5} | {'s':>3} | {'p':>5}")
+    print("-" * 30)
+
+    while i > 0:
+        s = i % 2
+        if s == 1:
+            p = (p * a_k) % n
+        print(f"{step:>2} | {a_k:>5} | {i:>5} | {s:>3} | {p:>5}")
+        a_k = (a_k * a_k) % n
+        i = i // 2
+        step += 1
+
+    print(f"Итоговый результат: {p} ({a}^{exponent} mod {n})\n")
+    return p
+
+
+def manual_rsa_encrypt_decrypt():
+    """
+    d — взаимно простое с φ(n)
+    e — обратный элемент
+    Открытый ключ (e, n), закрытый ключ (d, n)
+    """
+
+    alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+
+    print("=" * 60)
+    print("RSA ШИФРОВАНИЕ И РАСШИФРОВКА ")
+    print("=" * 60)
+
+    p = int(input("Введите первое простое число p: "))
+    q = int(input("Введите второе простое число q: "))
+    plaintext = input("Введите текст для шифрования (русские буквы): ").upper()
+
+    n = p * q
+    phi = (p - 1) * (q - 1)
+
+    # d — взаимно простое с φ(n)
+    for i in range(2, phi):
+        if gcd(i, phi) == 1:
+            d = i
+            break
+
+    # e — обратный элемент к d по модулю φ(n)
+    e = modinv(d, phi)
+
+    print(f"\n--- ПАРАМЕТРЫ RSA ---")
+    print(f"p = {p}, q = {q}")
+    print(f"n = {n}, φ(n) = {phi}")
+    print(f"Открытый ключ (e, n) = ({e}, {n})")
+    print(f"Закрытый ключ (d, n) = ({d}, {n})")
+    print(f"Алфавит ({len(alphabet)} букв): {alphabet}")
+
+    plain_numbers = text_to_numbers(plaintext, alphabet)
+    print(f"\n--- ПРЕОБРАЗОВАНИЕ ТЕКСТА ---")
+    print(f"Оригинальный текст: '{plaintext}'")
+    print(f"Числовое представление: {plain_numbers}")
+
+    # --- ШИФРОВАНИЕ ---
+    print("\n" + "=" * 50)
+    print(f"RSA ШИФРОВАНИЕ (используем e = {e})")
+    print("=" * 50)
+
+    encrypted_message = []
+    for idx, m in enumerate(plain_numbers):
+        print(f"Шифрование символа {idx + 1} ('{plaintext[idx]}' = {m}):")
+        c = fast_pow_mod(m, e, n, "Шифрование")
+        encrypted_message.append(c)
+
+    encrypted_text = numbers_to_text_encrypted(encrypted_message, alphabet)
+    print(f"Зашифрованное сообщение в числах: {encrypted_message}")
+    print(f"Зашифрованное сообщение в тексте: '{encrypted_text}'")
+
+    # --- РАСШИФРОВКА ---
+    print("\n" + "=" * 50)
+    print(f"RSA РАСШИФРОВКА (используем d = {d})")
+    print("=" * 50)
+
+    decrypted_message = []
+    for idx, c in enumerate(encrypted_message):
+        print(f"Расшифровка символа {idx + 1} (число {c}):")
+        m = fast_pow_mod(c, d, n, "Расшифровка")
+        decrypted_message.append(m)
+
+    decrypted_text = numbers_to_text(decrypted_message, alphabet)
+
+    print("\n" + "=" * 60)
+    print("ИТОГОВЫЕ РЕЗУЛЬТАТЫ")
+    print("=" * 60)
+    print(f"Оригинальный текст: '{plaintext}'")
+    print(f"Зашифрованный текст: '{encrypted_text}'")
+    print(f"Расшифрованный текст: '{decrypted_text}'")
+
+
+if __name__ == "__main__":
+    manual_rsa_encrypt_decrypt()
+
+
+
+
+
+
+
+
+
+
+
+
+
+#rsa_mod
+import math
+
+
+def gcd(a, b):
+    """Наибольший общий делитель"""
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+
+def modinv(a, m):
+    """Нахождение обратного элемента по модулю"""
+    m0, x0, x1 = m, 0, 1
+    while a > 1:
+        q = a // m
+        a, m = m, a % m
+        x0, x1 = x1 - q * x0, x0
+    if x1 < 0:
+        x1 += m0
+    return x1
+
+
+def text_to_numbers(text, alphabet):
+    """Преобразование текста в числа по позиции в алфавите"""
+    numbers = []
+    for char in text:
+        if char in alphabet:
+            numbers.append(alphabet.index(char) + 1)
+        else:
+            numbers.append(0)
+    return numbers
+
+
+def numbers_to_text(numbers, alphabet):
+    """Преобразование чисел обратно в текст"""
+    text = ""
+    for num in numbers:
+        if 1 <= num <= len(alphabet):
+            text += alphabet[num - 1]
+        else:
+            text += "?"
+    return text
+
+
+def numbers_to_text_encrypted(numbers, alphabet):
+    """Преобразование зашифрованных чисел в текст"""
+    text = ""
+    for num in numbers:
+        encrypted_index = (num - 1) % len(alphabet) + 1
+        if 1 <= encrypted_index <= len(alphabet):
+            text += alphabet[encrypted_index - 1]
+        else:
+            text += "?"
+    return text
+
+
+def fast_pow_mod(a, exponent, n, operation_name):
+    """Быстрое возведение в степень по модулю с выводом шагов"""
+    i = exponent
+    p = 1
+    a_k = a % n
+    step = 1
+
+    print(f"{operation_name} числа {a}:")
+    print(f"{'k':>2} | {'a_k':>5} | {'i':>5} | {'s':>3} | {'p':>5}")
+    print("-" * 30)
+
+    while i > 0:
+        s = i % 2
+        if s == 1:
+            p = (p * a_k) % n
+        print(f"{step:>2} | {a_k:>5} | {i:>5} | {s:>3} | {p:>5}")
+        a_k = (a_k * a_k) % n
+        i = i // 2
+        step += 1
+
+    print(f"Итоговый результат: {p} ({a}^{exponent} mod {n})\n")
+    return p
+
+
+def get_valid_d(phi):
+    """Получение корректного значения d от пользователя с проверкой взаимной простоты"""
+    while True:
+        try:
+            d = int(input(f"Введите значение d (1 < d < {phi}, взаимно простое с {phi}): "))
+            
+            if d <= 1 or d >= phi:
+                print(f"Ошибка: d должно быть в диапазоне 1 < d < {phi}")
+                continue
+                
+            if gcd(d, phi) != 1:
+                print(f"Ошибка: d = {d} и φ(n) = {phi} не взаимно просты (НОД = {gcd(d, phi)})")
+                print("Попробуйте другое значение.")
+                continue
+                
+            return d
+            
+        except ValueError:
+            print("Ошибка: введите целое число.")
+
+
+def manual_rsa_encrypt_decrypt():
+    """
+    d — взаимно простое с φ(n)
+    e — обратный элемент
+    Открытый ключ (e, n), закрытый ключ (d, n)
+    """
+
+    alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+
+    print("=" * 60)
+    print("RSA ШИФРОВАНИЕ И РАСШИФРОВКА ")
+    print("=" * 60)
+
+    p = int(input("Введите первое простое число p: "))
+    q = int(input("Введите второе простое число q: "))
+    plaintext = input("Введите текст для шифрования (русские буквы): ").upper()
+
+    n = p * q
+    phi = (p - 1) * (q - 1)
+
+    print(f"\n--- ВЫЧИСЛЕННЫЕ ПАРАМЕТРЫ ---")
+    print(f"n = p * q = {p} * {q} = {n}")
+    print(f"φ(n) = (p-1) * (q-1) = {p-1} * {q-1} = {phi}")
+
+    # Получаем d от пользователя с проверкой
+    d = get_valid_d(phi)
+
+    # e — обратный элемент к d по модулю φ(n)
+    e = modinv(d, phi)
+
+    print(f"\n--- ПАРАМЕТРЫ RSA ---")
+    print(f"p = {p}, q = {q}")
+    print(f"n = {n}, φ(n) = {phi}")
+    print(f"Выбранное d = {d} (взаимно простое с {phi} ✓)")
+    print(f"Вычисленное e = {e} (обратный элемент к d по модулю φ(n))")
+    print(f"Открытый ключ (e, n) = ({e}, {n})")
+    print(f"Закрытый ключ (d, n) = ({d}, {n})")
+    print(f"Алфавит ({len(alphabet)} букв): {alphabet}")
+
+    plain_numbers = text_to_numbers(plaintext, alphabet)
+    print(f"\n--- ПРЕОБРАЗОВАНИЕ ТЕКСТА ---")
+    print(f"Оригинальный текст: '{plaintext}'")
+    print(f"Числовое представление: {plain_numbers}")
+
+    # --- ШИФРОВАНИЕ ---
+    print("\n" + "=" * 50)
+    print(f"RSA ШИФРОВАНИЕ (используем e = {e})")
+    print("=" * 50)
+
+    encrypted_message = []
+    for idx, m in enumerate(plain_numbers):
+        print(f"Шифрование символа {idx + 1} ('{plaintext[idx]}' = {m}):")
+        c = fast_pow_mod(m, e, n, "Шифрование")
+        encrypted_message.append(c)
+
+    encrypted_text = numbers_to_text_encrypted(encrypted_message, alphabet)
+    print(f"Зашифрованное сообщение в числах: {encrypted_message}")
+    print(f"Зашифрованное сообщение в тексте: '{encrypted_text}'")
+
+    # --- РАСШИФРОВКА ---
+    print("\n" + "=" * 50)
+    print(f"RSA РАСШИФРОВКА (используем d = {d})")
+    print("=" * 50)
+
+    decrypted_message = []
+    for idx, c in enumerate(encrypted_message):
+        print(f"Расшифровка символа {idx + 1} (число {c}):")
+        m = fast_pow_mod(c, d, n, "Расшифровка")
+        decrypted_message.append(m)
+
+    decrypted_text = numbers_to_text(decrypted_message, alphabet)
+
+    print("\n" + "=" * 60)
+    print("ИТОГОВЫЕ РЕЗУЛЬТАТЫ")
+    print("=" * 60)
+    print(f"Оригинальный текст: '{plaintext}'")
+    print(f"Зашифрованный текст: '{encrypted_text}'")
+    print(f"Расшифрованный текст: '{decrypted_text}'")
+
+
+if __name__ == "__main__":
+    manual_rsa_encrypt_decrypt()
+
+
+
+
+
+
+
+#rsa_hash
+import math
+import random
+
+
+def gcd(a, b):
+    """Наибольший общий делитель"""
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+
+def modinv(a, m):
+    """Нахождение обратного элемента по модулю"""
+    m0, x0, x1 = m, 0, 1
+    while a > 1:
+        q = a // m
+        a, m = m, a % m
+        x0, x1 = x1 - q * x0, x0
+    if x1 < 0:
+        x1 += m0
+    return x1
+
+
+def text_to_numbers(text, alphabet):
+    """Преобразование текста в числа по позиции в алфавите"""
+    numbers = []
+    for char in text:
+        if char in alphabet:
+            numbers.append(alphabet.index(char) + 1)
+        else:
+            numbers.append(0)
+    return numbers
+
+
+def create_single_hash(word, n):
+    """Создание ОДНОГО хеша для всего сообщения"""
+    r = random.randint(0, 999)  # H0 - случайное начальное значение
+    hash_value = r
+
+    print(f"Создание хеша для сообщения {word}:")
+    print(f"Начальное значение H0 = {r}")
+
+    for i in range(len(word)):
+        old_hash = hash_value
+        hash_value = ((hash_value + word[i]) * (hash_value + word[i])) % n
+        print(f"H {i + 1}: H_{i} = {old_hash}, +{word[i]} -> ({old_hash} + {word[i]})² mod {n} = {hash_value}")
+
+    print(f"ФИНАЛЬНЫЙ ХЕШ (представление сообщения): {hash_value}\n")
+    return hash_value
+
+
+def fast_pow_mod(a, exponent, n, operation_name):
+    """Быстрое возведение в степень по модулю с выводом шагов"""
+    i = exponent
+    p = 1
+    a_k = a % n
+    step = 1
+
+    print(f"{operation_name} числа {a}:")
+    print(f"{'k':>2} | {'a_k':>5} | {'i':>5} | {'s':>3} | {'p':>5}")
+    print("-" * 30)
+
+    while i > 0:
+        s = i % 2
+        if s == 1:
+            p = (p * a_k) % n
+        print(f"{step:>2} | {a_k:>5} | {i:>5} | {s:>3} | {p:>5}")
+        a_k = (a_k * a_k) % n
+        i = i // 2
+        step += 1
+
+    print(f"Итоговый результат: {p} ({a}^{exponent} mod {n})\n")
+    return p
+
+
+def manual_rsa_with_single_hash():
+    """RSA с использованием ОДНОГО хеша как представления сообщения"""
+
+    alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+
+    print("=" * 60)
+    print("ПРЕДСТАВЛЕНИЕ СООБЩЕНИЯ В ВИДЕ ЕДИНОГО ХЕША")
+    print("=" * 60)
+
+    p = int(input("Введите первое простое число p: "))
+    q = int(input("Введите второе простое число q: "))
+    plaintext = input("Введите текст для шифрования (русские буквы): ").upper()
+
+    n = p * q
+    phi = (p - 1) * (q - 1)
+
+    # d — взаимно простое с φ(n)
+    for i in range(2, phi):
+        if gcd(i, phi) == 1:
+            d = i
+            break
+
+    # e — обратный элемент к d по модулю φ(n)
+    e = modinv(d, phi)
+
+    print(f"\n--- ПАРАМЕТРЫ ---")
+    print(f"p = {p}, q = {q}")
+    print(f"n = {n}, φ(n) = {phi}")
+    print(f"Открытый ключ (e, n) = ({e}, {n})")
+    print(f"Закрытый ключ (d, n) = ({d}, {n})")
+    print(f"Алфавит ({len(alphabet)} букв): {alphabet}")
+
+    plain_numbers = text_to_numbers(plaintext, alphabet)
+    print(f"\n--- ПРЕОБРАЗОВАНИЕ ТЕКСТА ---")
+    print(f"Оригинальный текст: '{plaintext}'")
+    print(f"Числовое представление: {plain_numbers}")
+
+    # --- СОЗДАНИЕ ЕДИНОГО ХЕША ---
+    print("\n" + "=" * 50)
+    print("СОЗДАНИЕ ЕДИНОГО ХЕША ДЛЯ ВСЕГО СООБЩЕНИЯ")
+    print("=" * 50)
+
+    message_hash = create_single_hash(plain_numbers, n)
+    print(f"Сообщение представлено как один хеш: {message_hash}")
+
+    # --- ШИФРОВАНИЕ ХЕША ---
+    print("\n" + "=" * 50)
+    print(f"ШИФРОВАНИЕ ХЕША (используем e = {e})")
+    print("=" * 50)
+
+    encrypted_hash = fast_pow_mod(message_hash, d, n, "Шифрование хеша")
+    print(f"Зашифрованный хеш: {encrypted_hash}")
+
+    # --- РАСШИФРОВКА ХЕША ---
+    print("\n" + "=" * 50)
+    print(f"РАСШИФРОВКА ХЕША (используем d = {d})")
+    print("=" * 50)
+
+    decrypted_hash = fast_pow_mod(encrypted_hash, e, n, "Расшифровка хеша")
+    print(f"Расшифрованный хеш: {decrypted_hash}")
+
+    # --- ПРОВЕРКА ---
+    print("\n" + "=" * 50)
+    print("ПРОВЕРКА ЦЕЛОСТНОСТИ")
+    print("=" * 50)
+
+    print(f"Оригинальный хеш: {message_hash}")
+    print(f"Расшифрованный хеш: {decrypted_hash}")
+
+    if message_hash == decrypted_hash:
+        print("✓ Хеши совпадают! Сообщение передано корректно.")
+    else:
+        print("✗ Хеши не совпадают! Ошибка при передаче.")
+
+    print("\n" + "=" * 60)
+    print("ИТОГОВЫЕ РЕЗУЛЬТАТЫ")
+    print("=" * 60)
+    print(f"Оригинальный текст: '{plaintext}'")
+    print(f"Исходные числа: {plain_numbers}")
+    print(f"Единый хеш: {message_hash}")
+    print(f"Зашифрованный хеш: {encrypted_hash}")
+
+
+if __name__ == "__main__":
+    manual_rsa_with_single_hash()
