@@ -381,5 +381,175 @@ if __name__ == "__main__":
 
     print("\nГенерация 21-битного простого числа...")
     prime = generator.generate_prime(21)
+import random
+import math
 
+
+def fast_pow_mod(a, exponent, n, operation_name=""):
+    """Быстрое возведение в степень по модулю с выводом шагов"""
+    i = exponent
+    p = 1
+    a_k = a % n
+    step = 1
+
+    print(f"\n{operation_name}:")
+    print(f"{'k':>2} | {'a_k':>10} | {'i':>10} | {'s':>3} | {'p':>10}")
+    print("-" * 45)
+
+    while i > 0:
+        s = i % 2
+        if s == 1:
+            p_prev = p
+            p = (p * a_k) % n
+            print(f"{step:>2} | {a_k:>10} | {i:>10} | {s:>3} | {p_prev:>2}×{a_k:>2} mod {n} = {p:>2}")
+        else:
+            print(f"{step:>2} | {a_k:>10} | {i:>10} | {s:>3} | {p:>10}")
+        
+        a_k_prev = a_k
+        a_k = (a_k * a_k) % n
+        i = i // 2
+        step += 1
+
+    print(f"Результат: {p} ({a}^{exponent} mod {n})\n")
+    return p
+
+
+class PrimeGenerator:
+    def __init__(self):
+        self.small_primes = self._generate_small_primes(200)
+
+    def _generate_small_primes(self, limit):
+        """Генерирует список простых чисел до заданного предела"""
+        sieve = [True] * (limit + 1)
+        sieve[0] = sieve[1] = False
+
+        for i in range(2, int(math.sqrt(limit)) + 1):
+            if sieve[i]:
+                for j in range(i * i, limit + 1, i):
+                    sieve[j] = False
+
+        return [i for i, is_prime in enumerate(sieve) if is_prime]
+
+    def rabin_miller_test(self, n, k=5, show_steps=True):
+        """
+        Корректная реализация теста Рабина-Миллера
+        """
+        # Проверка тривиальных случаев
+        if n == 2 or n == 3:
+            return True
+        if n <= 1 or n % 2 == 0:
+            return False
+
+        # Разложение n-1 = 2^s * d
+        s = 0
+        d = n - 1
+        while d % 2 == 0:
+            d //= 2
+            s += 1
+
+        print(f"\n=== Тест Рабина-Миллера для числа {n} ===")
+        print(f"Разложение: {n-1} = 2^{s} × {d}")
+
+        for i in range(k):
+            a = random.randint(2, n - 2)
+            print(f"\n--- Тест {i+1}/{k}: свидетель a = {a} ---")
+
+            # Вычисление x = a^d mod n
+            if show_steps:
+                x = fast_pow_mod(a, d, n, f"Вычисление a^d mod n")
+            else:
+                x = pow(a, d, n)
+                print(f"x = a^d mod n = {a}^{d} mod {n} = {x}")
+
+            # Если x = 1 или x = n-1, переходим к следующему свидетелю
+            if x == 1 or x == n - 1:
+                print(f"✓ Тест пройден: x = {x}")
+                continue
+
+            # Повторяем возведение в квадрат s-1 раз
+            test_passed = False
+            for j in range(1, s):
+                print(f"\nШаг j = {j}:")
+                x_prev = x
+                
+                if show_steps:
+                    x = fast_pow_mod(x, 2, n, f"Возведение в квадрат (шаг {j})")
+                else:
+                    x = pow(x, 2, n)
+                    print(f"x = x_prev² mod n = {x_prev}² mod {n} = {x}")
+
+                if x == n - 1:
+                    print(f"✓ Тест пройден на шаге j={j}: x = {x}")
+                    test_passed = True
+                    break
+                elif x == 1:
+                    print(f"✗ Тест провален на шаге j={j}: x = 1 (составное)")
+                    return False
+                else:
+                    print(f"  Продолжаем: x = {x}")
+
+            # Если ни на одном шаге не получили n-1, число составное
+            if not test_passed:
+                print(f"✗ Тест провален: x = {x} ≠ {n-1} на всех шагах")
+                return False
+
+        print(f"\n🎉 Все {k} тестов пройдены успешно!")
+        print(f"📊 Вероятность простоты: {(1 - (1/4)**k) * 100:.8f}%")
+        return True
+
+    def is_divisible_by_small_primes(self, n):
+        """Проверяет делимость на малые простые числа"""
+        for prime in self.small_primes:
+            if prime >= n:
+                break
+            if n % prime == 0:
+                return True
+        return False
+
+    def generate_prime(self, bits):
+        """Генерирует простое число заданной битовой длины"""
+        attempts = 0
+        while attempts < 1000:  # Защита от бесконечного цикла
+            attempts += 1
+            
+            # Генерация случайного числа заданной длины
+            p = random.getrandbits(bits)
+
+            # Устанавливаем старший и младший биты
+            p |= (1 << (bits - 1))  # старший бит = 1
+            p |= 1  # младший бит = 1 (нечётность)
+
+            if p.bit_length() != bits:
+                continue
+
+            print(f"\nПопытка {attempts}: проверка числа {p}")
+
+            # Проверка на делимость малыми простыми
+            if self.is_divisible_by_small_primes(p):
+                print("✗ Отвергнуто: делится на малое простое")
+                continue
+
+            # Тест Рабина-Миллера
+            if self.rabin_miller_test(p, k=5):
+                print(f"\n✅ Найдено вероятно простое число: {p}")
+                print(f"📏 Битовая длина: {p.bit_length()} бит")
+                print(f"🔢 Количество попыток: {attempts}")
+                return p
+            else:
+                print("✗ Отвергнуто: тест Рабина-Миллера не пройден")
+
+        print(f"Не удалось найти простое число за {attempts} попыток")
+        return None
+
+
+# === Пример использования ===
+if __name__ == "__main__":
+    generator = PrimeGenerator()
+
+    print("Генерация 16-битного простого числа...")
+    prime = generator.generate_prime(16)
+    
+    if prime:
+        print(f"\n🎯 Финальный результат: {prime}")
+        print(f"🔍 Проверка простоты встроенной функцией: {all(prime % i != 0 for i in range(2, int(math.sqrt(prime)) + 1))}")
 
