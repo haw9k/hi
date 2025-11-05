@@ -1,75 +1,23 @@
+import random
 import math
 
 
-def gcd(a, b):
-    """Наибольший общий делитель"""
-    while b != 0:
-        a, b = b, a % b
-    return a
-
-
-def modinv(a, m):
-    """Нахождение обратного элемента по модулю"""
-    m0, x0, x1 = m, 0, 1
-    while a > 1:
-        q = a // m
-        a, m = m, a % m
-        x0, x1 = x1 - q * x0, x0
-    if x1 < 0:
-        x1 += m0
-    return x1
-
-
-def text_to_numbers(text, alphabet):
-    """Преобразование текста в числа по позиции в алфавите"""
-    numbers = []
-    for char in text:
-        if char in alphabet:
-            numbers.append(alphabet.index(char) + 1)
-        else:
-            numbers.append(0)
-    return numbers
-
-
-def numbers_to_text(numbers, alphabet):
-    """Преобразование чисел обратно в текст"""
-    text = ""
-    for num in numbers:
-        if 1 <= num <= len(alphabet):
-            text += alphabet[num - 1]
-        else:
-            text += "?"
-    return text
-
-
-def numbers_to_text_encrypted(numbers, alphabet):
-    """Преобразование зашифрованных чисел в текст"""
-    text = ""
-    for num in numbers:
-        encrypted_index = (num - 1) % len(alphabet) + 1
-        if 1 <= encrypted_index <= len(alphabet):
-            text += alphabet[encrypted_index - 1]
-        else:
-            text += "?"
-    return text
-
-
-def fast_pow_mod(a, exponent, n, operation_name):
+def fast_pow_mod(a, exponent, n, operation_name=""):
     """Быстрое возведение в степень по модулю с выводом шагов"""
     i = exponent
     p = 1
     a_k = a % n
     step = 1
 
-    print(f"{operation_name} числа {a}:")
-    print(f"{'k':>2} | {'a_k':>5} | {'i':>5} | {'s':>3} | {'p':>5}")
-    print("-" * 30)
+    print(f"\n{operation_name} числа {a}:")
+    print(f"{'k':>2} | {'a_k':>10} | {'i':>10} | {'s':>3} | {'p':>10}")
+    print("-" * 45)
 
     while i > 0:
         s = i % 2
         if s == 1:
             p = (p * a_k) % n
-        print(f"{step:>2} | {a_k:>5} | {i:>5} | {s:>3} | {p:>5}")
+        print(f"{step:>2} | {a_k:>10} | {i:>10} | {s:>3} | {p:>10}")
         a_k = (a_k * a_k) % n
         i = i // 2
         step += 1
@@ -78,106 +26,161 @@ def fast_pow_mod(a, exponent, n, operation_name):
     return p
 
 
-def get_valid_d(phi):
-    """Получение корректного значения d от пользователя с проверкой взаимной простоты"""
-    while True:
-        try:
-            d = int(input(f"Введите значение d (1 < d < {phi}, взаимно простое с {phi}): "))
+class PrimeGenerator:
+    def __init__(self):
+        # Генерируем малые простые числа до 200 для фильтрации
+        self.small_primes = self._generate_small_primes(200)
 
-            if d <= 1 or d >= phi:
-                print(f"Ошибка: d должно быть в диапазоне 1 < d < {phi}")
+    def _generate_small_primes(self, limit):
+        """Генерирует список простых чисел до заданного предела"""
+        sieve = [True] * (limit + 1)
+        sieve[0] = sieve[1] = False
+
+        for i in range(2, int(math.sqrt(limit)) + 1):
+            if sieve[i]:
+                for j in range(i * i, limit + 1, i):
+                    sieve[j] = False
+
+        return [i for i, is_prime in enumerate(sieve) if is_prime]
+
+    def rabin_miller_test(self, p, k=5, show_steps=False):
+
+        """
+        Тест Рабина–Миллера на простоту с расчетом вероятности
+        """
+        if p == 2 or p == 3:
+            return True
+        if p <= 1 or p % 2 == 0:
+            return False
+
+        # Разложение p-1 = 2^b * m
+        b = 0
+        m = p - 1
+        while m % 2 == 0:
+            m //= 2
+            b += 1
+
+        print(f"\n--- Запуск теста Рабина–Миллера для числа {p} ---")
+        print(f"Разложение: {p-1} = 2^{b} * {m}")
+
+
+        passed_tests = 0
+        probability_history = []
+
+        for test_num in range(1, k + 1):
+            a = random.randint(2, p - 2)
+            print(f"\n=== Тест #{test_num}: свидетель a = {a} ===")
+
+            if show_steps:
+                z = fast_pow_mod(a, m, p, f"Вычисление a^m mod p")
+            else:
+                z = pow(a, m, p)
+
+            # Шаг (3): если z = 1 или z = p-1, тест пройден
+            if z == 1 or z == p - 1:
+                passed_tests += 1
+                error_prob = (1/4) ** passed_tests
+                confidence = (1 - error_prob)
+                probability_history.append(confidence)
+
+                print(f" Тест #{test_num} пройден (z = {z})")
+                print(f" Пройдено тестов: {passed_tests}/{test_num}")
+                print(f" Текущая вероятность простоты: {confidence:.6f}%")
+
                 continue
 
-            if gcd(d, phi) != 1:
-                print(f"Ошибка: d = {d} и φ(n) = {phi} не взаимно просты (НОД = {gcd(d, phi)})")
-                print("Попробуйте другое значение.")
+            j = 0
+            test_passed = False
+
+            # Шаг (5): последовательное возведение в квадрат
+            while j < b - 1:
+                j += 1
+
+                if show_steps:
+                    z = fast_pow_mod(z, 2, p, f"Возведение в квадрат (шаг {j})")
+                else:
+                    z = pow(z, 2, p)
+
+                # Шаг (4): если j > 0 и z = 1 - число составное
+                if j > 0 and z == 1:
+                    print(f" Тест #{test_num} провален (j={j}, z=1)")
+                    print(f" Пройдено тестов до провала: {passed_tests}/{test_num}")
+                    if passed_tests > 0:
+                        final_error_prob = (1/4) ** passed_tests
+                        print(f" Итоговая вероятность простоты: {(1 - final_error_prob) :.6f}%")
+                    return False
+
+                # Шаг (5): если z = p-1 - тест пройден
+                if z == p - 1:
+                    passed_tests += 1
+                    error_prob = (1/4) ** passed_tests
+                    confidence = (1 - error_prob)
+                    probability_history.append(confidence)
+
+                    print(f" Тест #{test_num} пройден (j={j}, z={p-1})")
+                    print(f" Пройдено тестов: {passed_tests}/{test_num}")
+                    print(f" Текущая вероятность простоты: {confidence:.6f}%")
+                    test_passed = True
+                    break
+
+            # Шаг (6): если j = b и z ≠ p-1 - число составное
+            if not test_passed and z != p - 1:
+                print(f" Тест #{test_num} провален (j={b}, z={z} != {p-1})")
+                print(f" Пройдено тестов до провала: {passed_tests}/{test_num}")
+                if passed_tests > 0:
+                    final_error_prob = (1/4) ** passed_tests
+                    print(f" Итоговая вероятность простоты: {(1 - final_error_prob) :.6f}%")
+                return False
+
+        # Все тесты пройдены успешно
+        final_error_prob = (1/4) ** passed_tests
+        final_confidence = (1 - final_error_prob)
+
+        print(f"\n ВСЕ ТЕСТЫ ПРОЙДЕНЫ УСПЕШНО!")
+        print(f" Итоговые результаты:")
+        print(f"Пройдено тестов: {passed_tests}/{k}")
+        print(f"Вероятность простоты: {final_confidence:.8f}%")
+
+
+        return True
+
+    def is_divisible_by_small_primes(self, n):
+        """Проверяет делимость на малые простые числа"""
+        for prime in self.small_primes:
+            if prime >= n:
+                break
+            if n % prime == 0:
+                return True
+        return False
+
+    def generate_prime(self, bits):
+        """Генерирует простое число заданной битовой длины"""
+        while True:
+            # Генерация случайного числа заданной длины
+            p = random.getrandbits(bits)
+
+            # Устанавливаем старший и младший биты
+            p |= (1 << (bits - 1))  # старший бит = 1
+            p |= 1  # младший бит = 1 (нечётность)
+
+            if p.bit_length() != bits:
                 continue
 
-            return d
+            # Проверка на делимость малыми простыми
+            if self.is_divisible_by_small_primes(p):
+                continue
 
-        except ValueError:
-            print("Ошибка: введите целое число.")
-
-
-def manual_rsa_encrypt_decrypt():
-    """
-    d — взаимно простое с φ(n)
-    e — обратный элемент
-    Открытый ключ (e, n), закрытый ключ (d, n)
-    """
-
-    alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
-
-    print("=" * 60)
-    print("RSA ШИФРОВАНИЕ И РАСШИФРОВКА ")
-    print("=" * 60)
-
-    p = int(input("Введите первое простое число p: "))
-    q = int(input("Введите второе простое число q: "))
-    plaintext = input("Введите текст для шифрования (русские буквы): ").upper()
-
-    n = p * q
-    phi = (p - 1) * (q - 1)
-
-    print(f"\n--- ВЫЧИСЛЕННЫЕ ПАРАМЕТРЫ ---")
-    print(f"n = p * q = {p} * {q} = {n}")
-    print(f"φ(n) = (p-1) * (q-1) = {p - 1} * {q - 1} = {phi}")
-
-    # Получаем d от пользователя с проверкой
-    d = get_valid_d(phi)
-
-    # e — обратный элемент к d по модулю φ(n)
-    e = modinv(d, phi)
-
-    print(f"\n--- ПАРАМЕТРЫ RSA ---")
-    print(f"p = {p}, q = {q}")
-    print(f"n = {n}, φ(n) = {phi}")
-    print(f"Выбранное d = {d} (взаимно простое с {phi} ✓)")
-    print(f"Вычисленное e = {e} (обратный элемент к d по модулю φ(n))")
-    print(f"Открытый ключ (e, n) = ({e}, {n})")
-    print(f"Закрытый ключ (d, n) = ({d}, {n})")
-    print(f"Алфавит ({len(alphabet)} букв): {alphabet}")
-
-    plain_numbers = text_to_numbers(plaintext, alphabet)
-    print(f"\n--- ПРЕОБРАЗОВАНИЕ ТЕКСТА ---")
-    print(f"Оригинальный текст: '{plaintext}'")
-    print(f"Числовое представление: {plain_numbers}")
-
-    # --- ШИФРОВАНИЕ ---
-    print("\n" + "=" * 50)
-    print(f"RSA ШИФРОВАНИЕ (используем e = {e})")
-    print("=" * 50)
-
-    encrypted_message = []
-    for idx, m in enumerate(plain_numbers):
-        print(f"Шифрование символа {idx + 1} ('{plaintext[idx]}' = {m}):")
-        c = fast_pow_mod(m, e, n, "Шифрование")
-        encrypted_message.append(c)
-
-    encrypted_text = numbers_to_text_encrypted(encrypted_message, alphabet)
-    print(f"Зашифрованное сообщение в числах: {encrypted_message}")
-    print(f"Зашифрованное сообщение в тексте: '{encrypted_text}'")
-
-    # --- РАСШИФРОВКА ---
-    print("\n" + "=" * 50)
-    print(f"RSA РАСШИФРОВКА (используем d = {d})")
-    print("=" * 50)
-
-    decrypted_message = []
-    for idx, c in enumerate(encrypted_message):
-        print(f"Расшифровка символа {idx + 1} (число {c}):")
-        m = fast_pow_mod(c, d, n, "Расшифровка")
-        decrypted_message.append(m)
-
-    decrypted_text = numbers_to_text(decrypted_message, alphabet)
-
-    print("\n" + "=" * 60)
-    print("ИТОГОВЫЕ РЕЗУЛЬТАТЫ")
-    print("=" * 60)
-    print(f"Оригинальный текст: '{plaintext}'")
-    print(f"Зашифрованный текст: '{encrypted_text}'")
-    print(f"Расшифрованный текст: '{decrypted_text}'")
+            # Тест Рабина–Миллера
+            if self.rabin_miller_test(p, k=5):
+                print(f"\n Найдено вероятно простое число: {p}")
+                print(f"Битовая длина: {p.bit_length()} бит\n")
+                return p
 
 
+# === Пример использования ===
 if __name__ == "__main__":
-    manual_rsa_encrypt_decrypt()
+    generator = PrimeGenerator()
+
+    print("\nГенерация 21-битного простого числа...")
+    prime = generator.generate_prime(21)
+
