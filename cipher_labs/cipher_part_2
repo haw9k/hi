@@ -368,7 +368,7 @@ def main():
     print()
     print(f"Проверка:")
     print(f"  Контрольное вычисление (g^(Xa*Xb) mod p): {correct_key}")
-    print(f"\nРезультат: {' Совпадают, обмен успешен!' if alice_secret == bob_secret == correct_key else '❌ Ошибка! Ключи не совпадают.'}")
+    print(f"\nРезультат: {' Совпадают, обмен успешен!' if alice_secret == bob_secret == correct_key else ' Ошибка! Ключи не совпадают.'}")
 
 
 
