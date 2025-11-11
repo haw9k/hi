@@ -193,3 +193,184 @@ if __name__ == "__main__":
 
     print("\nГенерация 21-битного простого числа...")
     prime = generator.generate_prime(21)
+
+
+
+#Difi_Helman
+import random
+import math
+
+
+def CustomMod(number, step, mod):
+    p = 1
+    while step > 0:
+        s = step % 2
+        if s == 1:
+            p = (p * number) % mod
+        number = (number * number) % mod
+        step = (step - s) // 2
+    return p
+
+
+
+class MilerRabin:
+    def Randomer(self, min_val):
+        num = int(random.random() * min_val)
+        binary = list(bin(num)[2:])
+        binary[0] = "1"
+        binary[-1] = "1"
+        num = int("".join(binary), 2)
+        return num
+
+    def searchB(self, num):
+        acc = num - 1
+        b = 0
+        while acc % 2 == 0:
+            b += 1
+            acc //= 2
+        return b
+
+    def searchM(self, num, b):
+        return (num - 1) // pow(2, b)
+
+    def startExamination(self, num, b, m):
+        for i in range(2, 256):
+            if num % i == 0:
+                return False
+        a = random.randint(0, num)
+        j = 0
+        z = CustomMod(a, m, num)
+        if z == 1 or z == num - 1:
+            return True
+        else:
+            while j != b:
+                j += 1
+                z = CustomMod(a, m * pow(2, j), num)
+                if z == num - 1:
+                    return True
+        return False
+
+    def createSimple(self):
+        min_val = int('1' + '0' * 21, 2)
+        num = self.Randomer(min_val)
+        b = self.searchB(num)
+        m = self.searchM(num, b)
+
+        iter_ = 0
+        count = 0
+
+        while iter_ != 5:
+            iter_ += 1
+            count += 1
+            result = self.startExamination(num, b, m)
+            if result != True:
+                if count >= 30:
+                    break
+                iter_ = 0
+                num += 2
+                b = self.searchB(num)
+                m = self.searchM(num, b)
+        return num
+
+
+
+def findPrimitiveElement(simple):
+    simpleList = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,
+                  59,61,67,71,73,79,83,89,97]
+    currentSimpleList = []
+
+    for s in simpleList:
+        if (simple - 1) % s == 0:
+            currentSimpleList.append(s)
+
+    primitive = 0
+    for i in range(simple // 2, 2, -1):
+        if primitive == 0:
+            primitive = i
+            for s in currentSimpleList:
+                if CustomMod(i, s, simple) == 1:
+                    primitive = 0
+                    break
+        else:
+            break
+    return primitive
+
+
+
+class Encryption:
+    letters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя "
+
+    def encript(self, worldNums, keys):
+        encodeText = ''
+        encodeNumber = []
+
+        for code in worldNums:
+            p = 1
+            a = code
+            I = keys['d']
+
+            while I > 0:
+                s = I % 2
+                if s == 1:
+                    p = (p * a) % keys['n']
+                a = (a * a) % keys['n']
+                I = (I - s) // 2
+
+            normal_p = p
+            if normal_p > len(self.letters):
+                normal_p = p - ((p // (len(self.letters) - 1)) * (len(self.letters) - 1))
+
+            encodeNumber.append(p)
+            encodeText += self.letters[normal_p - 1]
+
+        return {'text': encodeText, 'worldNums': encodeNumber}
+
+
+
+def createOpenKeys(p, g):
+    X = random.randint(0, p - 1)
+    Y = CustomMod(g, X, p)
+    return {"X": X, "Y": Y}
+
+def createCloseKey(Y, X, p):
+    return CustomMod(Y, X, p)
+
+def main():
+    simpleGenerater = MilerRabin()
+
+    p = simpleGenerater.createSimple()  # или p = 41
+    g = findPrimitiveElement(p)
+
+    print(f"Параметры системы:")
+    print(f"  p = {p}")
+    print(f"  g = {g}")
+    print("-" * 45)
+
+    AliceKeys = createOpenKeys(p, g)
+    BobKeys = createOpenKeys(p, g)
+
+    print(f"Алиса:")
+    print(f"  Приватный ключ Xa = {AliceKeys['X']}")
+    print(f"  Публичный ключ Ya = {AliceKeys['Y']}")
+    print()
+    print(f"Боб:")
+    print(f"  Приватный ключ Xb = {BobKeys['X']}")
+    print(f"  Публичный ключ Yb = {BobKeys['Y']}")
+    print("-" * 45)
+
+    alice_secret = createCloseKey(BobKeys['Y'], AliceKeys['X'], p)
+    bob_secret   = createCloseKey(AliceKeys['Y'], BobKeys['X'], p)
+    correct_key  = createCloseKey(g, AliceKeys['X'] * BobKeys['X'], p)
+
+    print(f"Обмен ключами:")
+    print(f"  Общий секрет (Алиса): {alice_secret}")
+    print(f"  Общий секрет (Боб):   {bob_secret}")
+    print()
+    print(f"Проверка:")
+    print(f"  Контрольное вычисление (g^(Xa*Xb) mod p): {correct_key}")
+    print(f"\nРезультат: {' Совпадают, обмен успешен!' if alice_secret == bob_secret == correct_key else '❌ Ошибка! Ключи не совпадают.'}")
+
+
+
+if __name__ == "__main__":
+    main()
